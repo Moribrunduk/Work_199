@@ -3,7 +3,9 @@ import sys
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
+from PyQt5 import QtCore
 import json
+
 
 with open("data\\all_data2.json", "r", encoding="utf-8") as file:
         all_data = json.load(file)
@@ -31,7 +33,9 @@ class MainWidget(QWidget):
         x = 0
         work_column = 0
         for tabel in tabels:
-            self.model.setItem(x, work_column, QStandardItem(tabel))
+            item = QStandardItem(tabel)
+            item.setEditable(False)
+            self.model.setItem(x, work_column, item)
             self.data_table_view.setSpan(x,0,2,1)
             x=x+2
 
@@ -41,12 +45,16 @@ class MainWidget(QWidget):
         # ДОБАВЛЯЕМ ФАМИЛИИ
         x = 0
         for tabel in tabels:
-            self.model.setItem(x, work_column, QStandardItem(tabels[tabel]["фамилия"]))
+            item = QStandardItem(tabels[tabel]["фамилия"])
+            item.setEditable(False)
+            self.model.setItem(x, work_column, item)
             x=x+2
         # ДОБАВЛЯЕМ ИНИЦИАЛЫ
         x = 1
         for tabel in tabels:
-            self.model.setItem(x, work_column, QStandardItem(tabels[tabel]["инициалы"]))
+            item = QStandardItem(tabels[tabel]["инициалы"])
+            item.setEditable(False)
+            self.model.setItem(x, work_column, item)
             x=x+2
         
         work_column+=1
@@ -56,9 +64,13 @@ class MainWidget(QWidget):
         for tabel in tabels:
             for day in range(0,len(tabels[tabel]["отработанные смены"])):
                 if day<16:
-                    self.model.setItem(x, day+work_column, QStandardItem(str(tabels[tabel]["отработанные смены"][day])))
+                    item = QStandardItem(QStandardItem(str(tabels[tabel]["отработанные смены"][day])))
+                    item.setEditable(False)
+                    self.model.setItem(x, day+work_column,item )
                 else:
-                    self.model.setItem(x+1, day+work_column-16, QStandardItem(str(tabels[tabel]["отработанные смены"][day])))
+                    item = QStandardItem(QStandardItem(str(tabels[tabel]["отработанные смены"][day])))
+                    item.setEditable(False)
+                    self.model.setItem(x+1, day+work_column-16, item)
             x=x+2
         
         work_column+=16
@@ -71,15 +83,15 @@ class MainWidget(QWidget):
                 self.model.setItem(x, y+work_column, QStandardItem(""))
 
 
-       
-
-
-
-            
-        
-        
+        #Задаем параметры таблицы
         self.data_table_view.setModel(self.model)
+        # self.data_table_view.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
+        self.data_table_view.horizontalHeader().setMinimumSectionSize(30)
         self.data_table_view.resizeColumnsToContents()
+        
+        
+        
+        
 
 
         self.top_layout.addWidget(self.data_table_view)
