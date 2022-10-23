@@ -86,16 +86,17 @@ def get_data_personal_87100():
             if calendar_time[x] != base_calendar[x] :
             #проверяем условие, что если по графику смен "-" а в табеле(7 или 8) отработан выходной
             # (чтобы не попасть в пропущенную смену)
-            
                     # из за особенностей калкендаря, т,к отчет начинается с 0, а даты с 1го числа
                     # но в календаре после 15 числа стоит "-" а дальше переходит на следующую строку
                 if x<15:
-                    missed_day.append(x+1)
                     if calendar_time[x] == 7:
                         continue
+                    missed_day.append(x+1)
                     missed_day_dict[x+1] = calendar_time[x]
             
                 else:
+                    if calendar_time[x] == 7:
+                        continue
                     missed_day.append(x)
                     missed_day_dict[x] = calendar_time[x]
 
