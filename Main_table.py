@@ -1,16 +1,16 @@
-from sqlite3 import Row
+
 import sys
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from PyQt5 import QtCore
 import json
+from PyQt5 import QtGui
 
 
 with open("data\\all_data2.json", "r", encoding="utf-8") as file:
         all_data = json.load(file)
 
-# разрработано для работы по одному шифру
+# разработано для работы по одному шифру
 
 tabels = all_data["шифр"]["87100"]["Табельный"]
 
@@ -67,11 +67,11 @@ class MainWidget(QWidget):
         for tabel in tabels:
             for day in range(0,len(tabels[tabel]["отработанные смены"])):
                 if day<16:
-                    item = QStandardItem(QStandardItem(str(tabels[tabel]["отработанные смены"][day])))
+                    item = QStandardItem(str(tabels[tabel]["отработанные смены"][day]))
                     item.setEditable(False)
                     self.model.setItem(x, day+work_column,item )
                 else:
-                    item = QStandardItem(QStandardItem(str(tabels[tabel]["отработанные смены"][day])))
+                    item = QStandardItem(str(tabels[tabel]["отработанные смены"][day]))
                     item.setEditable(False)
                     self.model.setItem(x+1, day+work_column-16, item)
             x=x+2
@@ -81,9 +81,43 @@ class MainWidget(QWidget):
         # ДОБАВЛЯЕМ ЯЧЕЙКИ В КОТОРЫЕ БУДЕМ ЗАНОСИТЬ ТАБЕЛЬНЫЕ ЗАМЕЩАЮЩИХ
         
         x = 0
-        for x in range(0,len(tabels[tabel]["отработанные смены"])*2):
+        for x in range(0,len(tabels)*2):
             for y in range(0,16):
-                self.model.setItem(x, y+work_column, QStandardItem(""))
+                item = QStandardItem("")
+                # делаем их все нередактируемые и заполняем цветом
+                item.setEditable(False)
+                item.setBackground(QtGui.QColor(192,192,192))
+                self.model.setItem(x, y+work_column, item)
+
+    def add_color_table_he_for_him(self):
+
+        # РАСКРАШИВАЕМ ЯЧЕЙКИ ТАБЛИЦЫ ГДЕ МОЖНО ДАТЬ ЗАМЕЩЕНИЕ
+
+        # НАЧАЛЬНАЯ КОЛОНКа # TODO сделать чтобы она изменялась по всему документу
+        work_column = 18
+        # НАЧАЛЬНАЯ СТРОКА # TODO сделать чтобы она изменялась по всему документу
+        x = 0
+
+        # пробегаемся по табельным
+        for tabel in tabels:
+            
+            for day in range(0,len(tabels[tabel]["отработанные смены"])):
+                if day<16:
+                    if day in tabels[tabel]["Пропущенные смены"]:
+                        # ПРОВЕРЯЕМ ЕСЛИ ПРОПУЩЕННЫЕ ДНИ ЭТО ТОЛЬКО ВЗЯТЫЕ ЧАСЫ, ТО НЕ ВКЛЮЧАЕМ ИХ В СПИСОК
+                        if tabels[tabel]["Причина пропуска смен"][str(day)] not in range(0,8):
+                            item = QStandardItem("")
+                            item.setBackground(QtGui.QColor(0,128,128))
+                            self.model.setItem(x, day+work_column-1,item)
+                else:
+                    if day in tabels[tabel]["Пропущенные смены"]:
+                        if tabels[tabel]["Причина пропуска смен"][str(day)] not in range(0,8):
+                            item = QStandardItem("")
+                           
+                            item.setBackground(QtGui.QColor(0,128,128))
+                            self.model.setItem(x+1, day+work_column-16,item)
+
+            x=x+2
 
     def parameters(self):
         #Задаем параметры таблицы
@@ -98,6 +132,7 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     main = MainWidget()
     main.add_data()
+    main.add_color_table_he_for_him()
     main.parameters()
     main.show()
 
