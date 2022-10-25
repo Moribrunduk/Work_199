@@ -1,4 +1,6 @@
 
+
+
 import sys
 from tracemalloc import start
 from PyQt5.QtCore import *
@@ -42,18 +44,14 @@ class MainWidget(QWidget):
                 work_column+=1
             elif data == 16 :
                 item = QStandardItem("-")
-                #делаем его нередактируемым
                 item.setEditable(False)
                 self.model.setItem(x, work_column, item)
                 work_column+=1
             else:
                 item = QStandardItem(str(data-1))
-                #делаем его нередактируемым
                 item.setEditable(False)
                 self.model.setItem(x+1, work_column-16, item)
                 work_column+=1
-
-
 
         # ДОБАВЛЯЕМ ТАБЕЛЬНЫЕ
 
@@ -110,7 +108,7 @@ class MainWidget(QWidget):
         
         x = 1+1
         work_row = x
-        for x in range(work_row,len(tabels)*2):
+        for x in range(work_row,len(tabels)*2+work_row):
             for y in range(0,16):
                 item = QStandardItem("")
                 # делаем их все нередактируемые и заполняем цветом
@@ -155,11 +153,14 @@ class MainWidget(QWidget):
         print(f'({row}, {column})')
         if self.model.index(row,0).data() == None:
             print(self.model.index(row-1,0).data())
+            print(f'ДАТА : {self.model.index(1,column-16).data()}')
         else:
             print(self.model.index(row,0).data())
+            print(f'ДАТА : {self.model.index(0,column-16).data()}')
 
         data = self.data_table_view.currentIndex().data()
         print(data)
+        
                             
     def parameters(self):
         #Задаем параметры таблицы
@@ -170,6 +171,7 @@ class MainWidget(QWidget):
         #Показывае данные при изменении в ячейке
         self.model.itemChanged.connect(self.show_info)
         #Показывает данные при клике на ячейку
+        #[INFO] ---  ИСПОЛЬЗУЕМ ФУНКЦИЮ
         self.data_table_view.clicked.connect(self.show_info)
         self.top_layout.addWidget(self.data_table_view)
         
