@@ -8,6 +8,33 @@ with open("data\\all_data.json", "r", encoding="utf-8") as file:
 
 # Пробегаемся по табельным
 
+<<<<<<< HEAD
+=======
+# for personal_number in all_data["шифр"]["87100"]["Табельный"]:
+#     day_for_replacement = []
+#     for i,data in enumerate(all_data["шифр"]["87100"]["Табельный"][personal_number]["отработанные смены"],1):
+#         if i<16:
+#             print(i,data)
+#             if all_data["шифр"]["87100"]["Рабочий календарь"][str(i)] == data or "-":
+#                 continue
+#             else:
+#                 day_for_replacement.append(all_data["шифр"]["87100"]["Рабочий календарь"][i])
+#     print(day_for_replacement)
+
+               
+        # if i==16:
+        #     print("-",data)
+        # if i>16:
+        #     print(i-1,data)
+
+        
+
+
+
+
+
+
+>>>>>>> 1e1ec902c3557e1ef80e6535c16940b3bdf61b2e
 for personal_number in all_data["шифр"]["87100"]["Табельный"]:
 
     # каждому табельному создаем словарь
@@ -18,7 +45,10 @@ for personal_number in all_data["шифр"]["87100"]["Табельный"]:
         #Проверяем если в причине пропущеной смены цифра(значит, человек брал часы), пропускаем этот день
         if all_data["шифр"]["87100"]["Табельный"][personal_number]["Причина пропуска смен"][str(data)] in range(0,8):
             continue
+<<<<<<< HEAD
         # проверяем совпадает ли день на замещение с выходным, пропускаем этот день
+=======
+>>>>>>> 1e1ec902c3557e1ef80e6535c16940b3bdf61b2e
         if all_data["шифр"]["87100"]["Рабочий календарь"][str(data)]=="-":
             continue
 

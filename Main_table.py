@@ -1,7 +1,10 @@
 
 
 
+<<<<<<< HEAD
 from operator import truediv
+=======
+>>>>>>> 1e1ec902c3557e1ef80e6535c16940b3bdf61b2e
 import sys
 from tracemalloc import start
 from PyQt5.QtCore import *
@@ -152,6 +155,7 @@ class MainWidget(QWidget):
         # Проверяем табельный к которой относится строка с кликом
         # если значение None то поднимаемся на одну строку выше(ячейки обьединенные,значение только в первом)
         if self.model.index(row,0).data() == None:
+<<<<<<< HEAD
 
             try:
                 tabel = self.model.index(row-1,0).data()
@@ -198,6 +202,16 @@ class MainWidget(QWidget):
 
     #     data = self.data_table_view.currentIndex().data()
     #     print(data)
+=======
+            print(self.model.index(row-1,0).data())
+            print(f'ДАТА : {self.model.index(1,column-16).data()}')
+        else:
+            print(self.model.index(row,0).data())
+            print(f'ДАТА : {self.model.index(0,column-16).data()}')
+
+        data = self.data_table_view.currentIndex().data()
+        print(data)
+>>>>>>> 1e1ec902c3557e1ef80e6535c16940b3bdf61b2e
         
                             
     def parameters(self):
@@ -210,7 +224,11 @@ class MainWidget(QWidget):
         self.model.itemChanged.connect(self.input_user_and_color)
         #Показывает данные при клике на ячейку
         #[INFO] ---  ИСПОЛЬЗУЕМ ФУНКЦИЮ
+<<<<<<< HEAD
         # self.data_table_view.clicked.connect(self.show_info)
+=======
+        self.data_table_view.clicked.connect(self.show_info)
+>>>>>>> 1e1ec902c3557e1ef80e6535c16940b3bdf61b2e
         self.top_layout.addWidget(self.data_table_view)
         
     
