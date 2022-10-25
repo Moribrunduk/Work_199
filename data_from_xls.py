@@ -20,11 +20,11 @@ all_data["шифр"][87100]["Табельный"]={}
 for row in range(0,work_sheet.nrows):
     x = work_sheet.cell(row,4).value
     if x == 87100:
-        start_row_for_87100 = row
+        start_row_for_87100 = row-2
         break
 
 def get_data_personal_87100():
-    # создаем календарь рабочего времени
+    # создаем календарь рабочего времени(для програмного расчета, начало с 0 последнее число 32)
     base_calendar = []
     for row in range(9,10+1):
         for cell in range(6,22):
@@ -32,6 +32,23 @@ def get_data_personal_87100():
                 base_calendar.append(work_sheet.cell(row,cell).value)
             else:
                 base_calendar.append(int(work_sheet.cell(row,cell).value))
+    
+    work_time_calendar = {}
+    for row in range(9,10+1):
+        for i,cell in enumerate(range(6,22)):
+            if row ==9:
+                if work_sheet.cell(row,cell).value == "-":
+                    work_time_calendar[i+1]=work_sheet.cell(row,cell).value
+                else:
+                    work_time_calendar[i+1]=int(work_sheet.cell(row,cell).value)
+            if row == 10:
+                if work_sheet.cell(row,cell).value == "-":
+                    work_time_calendar[i+1+15]=work_sheet.cell(row,cell).value
+                else:
+                    work_time_calendar[i+1+15]=int(work_sheet.cell(row,cell).value)
+    
+    
+    all_data["шифр"][87100]["Рабочий календарь"]=work_time_calendar
 
     # заполняем нашу базу данных из файла, по каждому табельному
     all_data["шифр"][87100]["Табельный"]={}
