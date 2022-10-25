@@ -1,6 +1,7 @@
 
 
 
+from operator import truediv
 import sys
 from tracemalloc import start
 from PyQt5.QtCore import *
@@ -104,7 +105,7 @@ class MainWidget(QWidget):
         
         work_column+=16
 
-        # ДОБАВЛЯЕМ ЯЧЕЙКИ В КОТОРЫЕ БУДЕМ ЗАНОСИТЬ ТАБЕЛЬНЫЕ ЗАМЕЩАЮЩИХ
+        # ДОБАВЛЯЕМ ЯЧЕЙКИ В КОТОРЫЕ БУДЕМ ЗАНОСИТЬ ТАБЕЛЬНЫЕ ЗАМЕЩАЮЩИХ(рабочая часть с правой стороны)
         
         x = 1+1
         work_row = x
@@ -117,49 +118,86 @@ class MainWidget(QWidget):
                 self.model.setItem(x, y+work_column, item)
         
 
-    def add_color_table_he_for_him(self):
-
+    def add_replace_cell(self):
         # РАСКРАШИВАЕМ ЯЧЕЙКИ ТАБЛИЦЫ ГДЕ МОЖНО ДАТЬ ЗАМЕЩЕНИЕ
 
         # НАЧАЛЬНАЯ КОЛОНКа # TODO сделать чтобы она изменялась по всему документу
         work_column = 18
         # НАЧАЛЬНАЯ СТРОКА # TODO сделать чтобы она изменялась по всему документу
         x = 1+1
-
         # пробегаемся по табельным
         for tabel in tabels:
-            
-            for day in range(0,len(tabels[tabel]["отработанные смены"])):
-                if day<16:
-                    if day in tabels[tabel]["Пропущенные смены"]:
-                        # ПРОВЕРЯЕМ ЕСЛИ ПРОПУЩЕННЫЕ ДНИ ЭТО ТОЛЬКО ВЗЯТЫЕ ЧАСЫ, ТО НЕ ВКЛЮЧАЕМ ИХ В СПИСОК
-                        if tabels[tabel]["Причина пропуска смен"][str(day)] not in range(0,8):
-                            item = QStandardItem("")
-                            item.setBackground(QtGui.QColor(0,128,128))
-                            self.model.setItem(x, day+work_column-1,item)
-                else:
-                    if day in tabels[tabel]["Пропущенные смены"]:
-                        if tabels[tabel]["Причина пропуска смен"][str(day)] not in range(0,8):
-                            item = QStandardItem("")
-                           
-                            item.setBackground(QtGui.QColor(0,128,128))
-                            self.model.setItem(x+1, day+work_column-16,item)
-
+            # Итерируем рабочий календарь по количеству дней
+            for day in range(1,len(all_data["шифр"]["87100"]["Рабочий календарь"])):
+                # Проверяем есть ли в день у указанного табельного замещающие(если есть, значит отмечаем в таблице этот день)
+                if tabels[tabel]["Замещающие"].get(str(day)) !=None:
+                    # если дни <16 это первая строка
+                    if day<16:
+                        item = QStandardItem("")
+                        item.setBackground(QtGui.QColor(0,128,128))
+                        self.model.setItem(x, day+work_column-1,item)
+                    # если дни=>16 вторая строка
+                    else:
+                        item = QStandardItem("")
+                        item.setBackground(QtGui.QColor(0,128,128))
+                        self.model.setItem(x+1, day+work_column-16,item)
             x=x+2
 
-    def show_info(self):
+    def cell_replacement_tabel_list(self):
+        pass
+    def input_user_and_color(self):
+        # ПРИНИМАЕМ ОТ ПОЛЬЗОВАТЕЛЯ ВВОД И ОРАШИВАЕМ ЯЧЕЙКИ В ЗАВИСИМОСТИ ОТ ЗНАЧЕНИЯ
         row = self.data_table_view.currentIndex().row()
         column = self.data_table_view.currentIndex().column()
-        print(f'({row}, {column})')
+        # Проверяем табельный к которой относится строка с кликом
+        # если значение None то поднимаемся на одну строку выше(ячейки обьединенные,значение только в первом)
         if self.model.index(row,0).data() == None:
-            print(self.model.index(row-1,0).data())
-            print(f'ДАТА : {self.model.index(1,column-16).data()}')
-        else:
-            print(self.model.index(row,0).data())
-            print(f'ДАТА : {self.model.index(0,column-16).data()}')
 
-        data = self.data_table_view.currentIndex().data()
-        print(data)
+            try:
+                tabel = self.model.index(row-1,0).data()
+                date = self.model.index(1,column-16).data()
+                user_input = self.data_table_view.currentIndex().data()
+                if user_input in tabels[tabel]["Замещающие"][date]:
+                    self.model.item(row, column).setBackground(QtGui.QColor(0,128,0))
+
+                elif user_input =="":
+                    self.model.item(row, column).setBackground(QtGui.QColor(0,128,128))
+
+                elif user_input not in tabels[tabel]["Замещающие"][date]:
+                    self.model.item(row, column).setBackground(QtGui.QColor(255,0,0))
+
+            except KeyError:
+                print("-")
+        else:
+            try:
+                tabel = self.model.index(row,0).data()
+                date = self.model.index(0,column-16).data()
+                user_input = self.data_table_view.currentIndex().data()
+                if user_input in tabels[tabel]["Замещающие"][date]:
+                    self.model.item(row, column).setBackground(QtGui.QColor(0,128,0))
+
+                elif user_input =="":
+                    self.model.item(row, column).setBackground(QtGui.QColor(0,128,128))
+
+                elif user_input not in tabels[tabel]["Замещающие"][date]:
+                    self.model.item(row, column).setBackground(QtGui.QColor(255,0,0))
+            except KeyError:
+                print("-")
+    
+
+    # def show_info(self):
+    #     row = self.data_table_view.currentIndex().row()
+    #     column = self.data_table_view.currentIndex().column()
+    #     print(f'({row}, {column})')
+    #     if self.model.index(row,0).data() == None:
+    #         print(self.model.index(row-1,0).data())
+    #         print(f'ДАТА : {self.model.index(1,column-16).data()}')
+    #     else:
+    #         print(self.model.index(row,0).data())
+    #         print(f'ДАТА : {self.model.index(0,column-16).data()}')
+
+    #     data = self.data_table_view.currentIndex().data()
+    #     print(data)
         
                             
     def parameters(self):
@@ -169,10 +207,10 @@ class MainWidget(QWidget):
         self.data_table_view.horizontalHeader().setMinimumSectionSize(30)
         self.data_table_view.resizeColumnsToContents()
         #Показывае данные при изменении в ячейке
-        self.model.itemChanged.connect(self.show_info)
+        self.model.itemChanged.connect(self.input_user_and_color)
         #Показывает данные при клике на ячейку
         #[INFO] ---  ИСПОЛЬЗУЕМ ФУНКЦИЮ
-        self.data_table_view.clicked.connect(self.show_info)
+        # self.data_table_view.clicked.connect(self.show_info)
         self.top_layout.addWidget(self.data_table_view)
         
     
@@ -180,7 +218,7 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     main = MainWidget()
     main.add_data()
-    main.add_color_table_he_for_him()
+    main.add_replace_cell()
     main.parameters()
     main.show()
 
