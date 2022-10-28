@@ -1,17 +1,23 @@
-
-
-
-<<<<<<< HEAD
-from operator import truediv
-=======
->>>>>>> 1e1ec902c3557e1ef80e6535c16940b3bdf61b2e
+from logging import exception
+from multiprocessing.managers import ValueProxy
+from multiprocessing.sharedctypes import Value
 import sys
-from tracemalloc import start
 from PyQt5.QtCore import *
+from PyQt5.QtCore import QSettings
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
+
 import json
 from PyQt5 import QtGui
+from time import sleep
+import codecs
+
+RED_BACKGROUND = 255,0,0
+BLUE_BACKGROUND = 0,128,128
+GREEN_BACKGROUND = 0,128,0
+GRAY_BACKGROUND = 192,192,192 
+
+save_data_in_file = {}
 
 
 with open("data\\all_data2.json", "r", encoding="utf-8") as file:
@@ -23,6 +29,7 @@ tabels = all_data["шифр"]["87100"]["Табельный"]
 
 
 class MainWidget(QWidget):
+    settings = QSettings("temp.ini", QSettings.IniFormat)
     def __init__(self):
         super(MainWidget, self).__init__()
         self.setWindowTitle("Расчет 199 премии")
@@ -114,7 +121,7 @@ class MainWidget(QWidget):
         work_row = x
         for x in range(work_row,len(tabels)*2+work_row):
             for y in range(0,16):
-                item = QStandardItem("")
+                item = QStandardItem(None)
                 # делаем их все нередактируемые и заполняем цветом
                 item.setEditable(False)
                 item.setBackground(QtGui.QColor(192,192,192))
@@ -146,16 +153,18 @@ class MainWidget(QWidget):
                         self.model.setItem(x+1, day+work_column-16,item)
             x=x+2
 
-    def cell_replacement_tabel_list(self):
-        pass
-    def input_user_and_color(self):
-        # ПРИНИМАЕМ ОТ ПОЛЬЗОВАТЕЛЯ ВВОД И ОРАШИВАЕМ ЯЧЕЙКИ В ЗАВИСИМОСТИ ОТ ЗНАЧЕНИЯ
-        row = self.data_table_view.currentIndex().row()
-        column = self.data_table_view.currentIndex().column()
-        # Проверяем табельный к которой относится строка с кликом
+
+    def input_user_color_and_save(self,row,column):
+        try:
+            data_dict = self.settings.value('input_user')
+            data_dict = eval(data_dict)
+            save_data_in_file = data_dict
+        except:
+            save_data_in_file = {}
+
+        # Проверяем табельный к которой относится выбранная ячейка.
         # если значение None то поднимаемся на одну строку выше(ячейки обьединенные,значение только в первом)
         if self.model.index(row,0).data() == None:
-<<<<<<< HEAD
 
             try:
                 tabel = self.model.index(row-1,0).data()
@@ -163,12 +172,16 @@ class MainWidget(QWidget):
                 user_input = self.data_table_view.currentIndex().data()
                 if user_input in tabels[tabel]["Замещающие"][date]:
                     self.model.item(row, column).setBackground(QtGui.QColor(0,128,0))
+                    save_data_in_file[row,column] = user_input, (0,128,0)
 
                 elif user_input =="":
                     self.model.item(row, column).setBackground(QtGui.QColor(0,128,128))
+                    save_data_in_file[row,column] = user_input, (0,128,128)
+                    
 
                 elif user_input not in tabels[tabel]["Замещающие"][date]:
                     self.model.item(row, column).setBackground(QtGui.QColor(255,0,0))
+                    save_data_in_file[row,column] = user_input, (255,0,0)
 
             except KeyError:
                 print("-")
@@ -179,41 +192,52 @@ class MainWidget(QWidget):
                 user_input = self.data_table_view.currentIndex().data()
                 if user_input in tabels[tabel]["Замещающие"][date]:
                     self.model.item(row, column).setBackground(QtGui.QColor(0,128,0))
+                    save_data_in_file[row,column] = user_input, (0,128,0)
 
                 elif user_input =="":
                     self.model.item(row, column).setBackground(QtGui.QColor(0,128,128))
+                    save_data_in_file[row,column] = user_input, (0,128,128)
 
                 elif user_input not in tabels[tabel]["Замещающие"][date]:
                     self.model.item(row, column).setBackground(QtGui.QColor(255,0,0))
+                    save_data_in_file[row,column] = user_input, (255,0,0)
             except KeyError:
                 print("-")
-    
-
-    # def show_info(self):
-    #     row = self.data_table_view.currentIndex().row()
-    #     column = self.data_table_view.currentIndex().column()
-    #     print(f'({row}, {column})')
-    #     if self.model.index(row,0).data() == None:
-    #         print(self.model.index(row-1,0).data())
-    #         print(f'ДАТА : {self.model.index(1,column-16).data()}')
-    #     else:
-    #         print(self.model.index(row,0).data())
-    #         print(f'ДАТА : {self.model.index(0,column-16).data()}')
-
-    #     data = self.data_table_view.currentIndex().data()
-    #     print(data)
-=======
-            print(self.model.index(row-1,0).data())
-            print(f'ДАТА : {self.model.index(1,column-16).data()}')
-        else:
-            print(self.model.index(row,0).data())
-            print(f'ДАТА : {self.model.index(0,column-16).data()}')
-
-        data = self.data_table_view.currentIndex().data()
-        print(data)
->>>>>>> 1e1ec902c3557e1ef80e6535c16940b3bdf61b2e
         
-                            
+        self.settings.setValue("input_user", str(save_data_in_file))
+        print(save_data_in_file)
+
+        
+    
+    def load_data(self):
+        try:
+            data_dict = self.settings.value('input_user')
+            data_dict = eval(data_dict)
+        # формат словаря
+        # {(строка,ячейка):(табельный,(R,G,B цвет))
+            for Key, Value in data_dict.items():
+                row = Key[0]
+                column = Key[1]
+                item = QStandardItem(Value[0])
+                item.setBackground(QtGui.QColor(Value[1][0],Value[1][1],Value[1][2]))
+                self.model.setItem(row, column,item)
+        except:
+            pass
+
+        
+        
+
+
+        # self.settings.setValue((f'{str(save_data_in_file[0])},{str(save_data_in_file[1])}', str(save_data_in_file[2]))
+                
+    def input_user_and_color_cell(self):
+        # ПРИНИМАЕМ ОТ ПОЛЬЗОВАТЕЛЯ ВВОД И ОРАШИВАЕМ ЯЧЕЙКИ В ЗАВИСИМОСТИ ОТ ЗНАЧЕНИЯ
+        row = self.data_table_view.currentIndex().row()
+        column = self.data_table_view.currentIndex().column()
+        MainWidget.input_user_color_and_save(self,row,column)
+        
+
+                       
     def parameters(self):
         #Задаем параметры таблицы
         self.data_table_view.setModel(self.model)
@@ -221,15 +245,13 @@ class MainWidget(QWidget):
         self.data_table_view.horizontalHeader().setMinimumSectionSize(30)
         self.data_table_view.resizeColumnsToContents()
         #Показывае данные при изменении в ячейке
-        self.model.itemChanged.connect(self.input_user_and_color)
+        self.model.itemChanged.connect(self.input_user_and_color_cell)
         #Показывает данные при клике на ячейку
         #[INFO] ---  ИСПОЛЬЗУЕМ ФУНКЦИЮ
-<<<<<<< HEAD
         # self.data_table_view.clicked.connect(self.show_info)
-=======
-        self.data_table_view.clicked.connect(self.show_info)
->>>>>>> 1e1ec902c3557e1ef80e6535c16940b3bdf61b2e
         self.top_layout.addWidget(self.data_table_view)
+    
+        
         
     
 if __name__ == '__main__':
@@ -237,7 +259,9 @@ if __name__ == '__main__':
     main = MainWidget()
     main.add_data()
     main.add_replace_cell()
+    main.load_data()
     main.parameters()
+    
     main.show()
 
     sys.exit(app.exec_())
