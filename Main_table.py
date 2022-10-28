@@ -9,13 +9,7 @@ from PyQt5 import QtGui
 from time import sleep
 import codecs
 
-RED_BACKGROUND = 255,0,0
-BLUE_BACKGROUND = 0,128,128
-GREEN_BACKGROUND = 0,128,0
-GRAY_BACKGROUND = 192,192,192 
-
 save_data_in_file = {}
-
 
 with open("data\\all_data2.json", "r", encoding="utf-8") as file:
         all_data = json.load(file)
@@ -151,7 +145,7 @@ class MainWidget(QWidget):
             x=x+2
 
 
-    def input_user_color_and_save(self,row,column):
+    def input_user_color_and_save(self):
         # загружаем данные из файла, и если файла нет используем пустой словарь
         try:
             data_dict = self.settings.value('input_user')
@@ -159,6 +153,10 @@ class MainWidget(QWidget):
             save_data_in_file = data_dict
         except:
             save_data_in_file = {}
+        
+        # ПРИНИМАЕМ ОТ ПОЛЬЗОВАТЕЛЯ ВВОД И ОРАШИВАЕМ ЯЧЕЙКИ В ЗАВИСИМОСТИ ОТ ЗНАЧЕНИЯ
+        row = self.data_table_view.currentIndex().row()
+        column = self.data_table_view.currentIndex().column()
 
         # Проверяем табельный к которой относится выбранная ячейка.
         # если значение None то поднимаемся на одну строку выше(ячейки обьединенные,значение только в первом)
@@ -221,21 +219,7 @@ class MainWidget(QWidget):
                 self.model.setItem(row, column,item)
         except:
             pass
-
-        
-        
-
-
-        # self.settings.setValue((f'{str(save_data_in_file[0])},{str(save_data_in_file[1])}', str(save_data_in_file[2]))
-                
-    def input_user_and_color_cell(self):
-        # ПРИНИМАЕМ ОТ ПОЛЬЗОВАТЕЛЯ ВВОД И ОРАШИВАЕМ ЯЧЕЙКИ В ЗАВИСИМОСТИ ОТ ЗНАЧЕНИЯ
-        row = self.data_table_view.currentIndex().row()
-        column = self.data_table_view.currentIndex().column()
-        MainWidget.input_user_color_and_save(self,row,column)
-        
-
-                       
+                  
     def parameters(self):
         #Задаем параметры таблицы
         self.data_table_view.setModel(self.model)
@@ -243,7 +227,7 @@ class MainWidget(QWidget):
         self.data_table_view.horizontalHeader().setMinimumSectionSize(30)
         self.data_table_view.resizeColumnsToContents()
         #Показывае данные при изменении в ячейке
-        self.model.itemChanged.connect(self.input_user_and_color_cell)
+        self.model.itemChanged.connect(self.input_user_color_and_save)
         #Показывает данные при клике на ячейку
         #[INFO] ---  ИСПОЛЬЗУЕМ ФУНКЦИЮ
         # self.data_table_view.clicked.connect(self.show_info)
