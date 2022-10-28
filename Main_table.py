@@ -1,12 +1,9 @@
-from logging import exception
-from multiprocessing.managers import ValueProxy
-from multiprocessing.sharedctypes import Value
+
 import sys
 from PyQt5.QtCore import *
 from PyQt5.QtCore import QSettings
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-
 import json
 from PyQt5 import QtGui
 from time import sleep
@@ -155,6 +152,7 @@ class MainWidget(QWidget):
 
 
     def input_user_color_and_save(self,row,column):
+        # загружаем данные из файла, и если файла нет используем пустой словарь
         try:
             data_dict = self.settings.value('input_user')
             data_dict = eval(data_dict)
