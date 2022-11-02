@@ -1,15 +1,20 @@
 
+
 import sys
+
 from PyQt5.QtCore import *
 from PyQt5.QtCore import QSettings
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 import json
 from PyQt5 import QtGui
-from time import sleep
-import codecs
+from collections import Counter
 
-save_data_in_file = {}
+save_input_user_for_load_in_file = {}
+# {(строка,ячейка):(табельный,(R,G,B цвет))
+save_input_user_for_summ_in_file = {}
+# {(табельный, дата):(табельный замещающего)}
+
 
 with open("data\\all_data2.json", "r", encoding="utf-8") as file:
         all_data = json.load(file)
@@ -36,7 +41,7 @@ class MainWidget(QWidget):
         #ДОБАВЯЕМ РАБОЧИЙ КАЛЕНДАРЬ
         #TODO
         x = 0
-        work_column=2
+        work_column=3
         for data in range(1,33):
             if data <16:
                 item = QStandardItem(str(data))
@@ -66,7 +71,7 @@ class MainWidget(QWidget):
             #делаем его нередактируемым
             item.setEditable(False)
             self.model.setItem(x, work_column, item)
-            self.data_table_view.setSpan(x,0,2,1)
+            self.data_table_view.setSpan(x,work_column,2,1)
             x=x+2
 
         work_column+=1
@@ -89,6 +94,19 @@ class MainWidget(QWidget):
             x=x+2
         
         work_column+=1
+
+        # ДОБАВЛЯЕМ РАЗРЯДЫ
+
+        x = 1+1
+        for tabel in tabels:
+            item = QStandardItem(str(tabels[tabel]["разряд"]))
+            item.setEditable(False)
+            self.model.setItem(x, work_column, item)
+            self.data_table_view.setSpan(x,work_column,2,1)
+            x=x+2
+        
+        work_column+=1
+
 
         # ДОБАВЛЯЕМ ГРАФИК ОТРАБОТАННЫХ СМЕН
         x = 1+1
@@ -123,7 +141,7 @@ class MainWidget(QWidget):
         # РАСКРАШИВАЕМ ЯЧЕЙКИ ТАБЛИЦЫ ГДЕ МОЖНО ДАТЬ ЗАМЕЩЕНИЕ
 
         # НАЧАЛЬНАЯ КОЛОНКа # TODO сделать чтобы она изменялась по всему документу
-        work_column = 18
+        work_column = 18+1
         # НАЧАЛЬНАЯ СТРОКА # TODO сделать чтобы она изменялась по всему документу
         x = 1+1
         # пробегаемся по табельным
@@ -148,11 +166,16 @@ class MainWidget(QWidget):
     def input_user_color_and_save(self):
         # загружаем данные из файла, и если файла нет используем пустой словарь
         try:
-            data_dict = self.settings.value('input_user')
-            data_dict = eval(data_dict)
-            save_data_in_file = data_dict
+            data_dict_from_input_user = self.settings.value('input_user')
+            data_dict_from_input_user = eval(data_dict_from_input_user)
+            save_input_user_for_load_in_file = data_dict_from_input_user
+            
+            data_dict_from_summ = self.settings.value("for_summ")
+            data_dict_from_summ = eval(data_dict_from_summ)
+            save_input_user_for_summ_in_file = data_dict_from_summ
         except:
-            save_data_in_file = {}
+            save_input_user_for_load_in_file = {}
+            save_input_user_for_summ_in_file = {}
         
         # ПРИНИМАЕМ ОТ ПОЛЬЗОВАТЕЛЯ ВВОД И ОРАШИВАЕМ ЯЧЕЙКИ В ЗАВИСИМОСТИ ОТ ЗНАЧЕНИЯ
         row = self.data_table_view.currentIndex().row()
@@ -167,17 +190,34 @@ class MainWidget(QWidget):
                 date = self.model.index(1,column-16).data()
                 user_input = self.data_table_view.currentIndex().data()
                 if user_input in tabels[tabel]["Замещающие"][date]:
-                    self.model.item(row, column).setBackground(QtGui.QColor(0,128,0))
-                    save_data_in_file[row,column] = user_input, (0,128,0)
+                    # self.model.item(row, column).setBackground(QtGui.QColor(0,128,0))
+
+                    save_input_user_for_load_in_file[row,column] = user_input, (0,128,0)
+
+                    save_input_user_for_summ_in_file[self.model.index(row-1,0).data(),
+                                                    self.model.index(1,column-16).data(),
+                                                    ] =  user_input
 
                 elif user_input =="":
-                    self.model.item(row, column).setBackground(QtGui.QColor(0,128,128))
-                    save_data_in_file[row,column] = user_input, (0,128,128)
+                    # self.model.item(row, column).setBackground(QtGui.QColor(0,128,128))
+                    try:
+
+                        del save_input_user_for_load_in_file[row,column] 
+                        del save_input_user_for_summ_in_file[self.model.index(row-1,0).data(),
+                                                    self.model.index(1,column-16).data(),
+                                                    ]
+                    except:
+                        pass
+
                     
 
                 elif user_input not in tabels[tabel]["Замещающие"][date]:
-                    self.model.item(row, column).setBackground(QtGui.QColor(255,0,0))
-                    save_data_in_file[row,column] = user_input, (255,0,0)
+                    # self.model.item(row, column).setBackground(QtGui.QColor(255,0,0))
+                    save_input_user_for_load_in_file[row,column] = user_input, (255,0,0)
+
+                    save_input_user_for_summ_in_file[self.model.index(row-1,0).data(),
+                                                    self.model.index(1,column-16).data()
+                                                    ] =  user_input
 
             except KeyError:
                 print("-")
@@ -187,24 +227,40 @@ class MainWidget(QWidget):
                 date = self.model.index(0,column-16).data()
                 user_input = self.data_table_view.currentIndex().data()
                 if user_input in tabels[tabel]["Замещающие"][date]:
-                    self.model.item(row, column).setBackground(QtGui.QColor(0,128,0))
-                    save_data_in_file[row,column] = user_input, (0,128,0)
+                    # self.model.item(row, column).setBackground(QtGui.QColor(0,128,0))
+                    save_input_user_for_load_in_file[row,column] = user_input, (0,128,0)
+                    save_input_user_for_summ_in_file[self.model.index(row,0).data(),
+                                                    self.model.index(0,column-16).data()
+                                                    ] = user_input
 
                 elif user_input =="":
                     self.model.item(row, column).setBackground(QtGui.QColor(0,128,128))
-                    save_data_in_file[row,column] = user_input, (0,128,128)
+                    try:
+
+                        del save_input_user_for_load_in_file[row,column] 
+                        del save_input_user_for_summ_in_file[self.model.index(row,0).data(),
+                                                        self.model.index(0,column-16).data()
+                                                        ]
+                    except:
+                        pass
 
                 elif user_input not in tabels[tabel]["Замещающие"][date]:
-                    self.model.item(row, column).setBackground(QtGui.QColor(255,0,0))
-                    save_data_in_file[row,column] = user_input, (255,0,0)
+                    # self.model.item(row, column).setBackground(QtGui.QColor(255,0,0))
+                    save_input_user_for_load_in_file[row,column] = user_input, (255,0,0)
+                    save_input_user_for_summ_in_file[self.model.index(row,0).data(),
+                                                    self.model.index(0,column-16).data()
+                                                    ] = user_input
             except KeyError:
                 print("-")
         
-        self.settings.setValue("input_user", str(save_data_in_file))
-        print(save_data_in_file)
+        self.settings.setValue("input_user", str(save_input_user_for_load_in_file))
+        self.settings.setValue("for_summ", str(save_input_user_for_summ_in_file))
+        print(save_input_user_for_load_in_file)
+        print(save_input_user_for_summ_in_file)
 
         
-    
+    def pr(self):
+        print("1")
     def load_data(self):
         try:
             data_dict = self.settings.value('input_user')
@@ -218,7 +274,65 @@ class MainWidget(QWidget):
                 item.setBackground(QtGui.QColor(Value[1][0],Value[1][1],Value[1][2]))
                 self.model.setItem(row, column,item)
         except:
-            pass
+            print(f'[INFO] -в блоке load_data {Exception}')
+
+    def summ_pay(self):
+        payment_list = []
+        list_tabel = []
+        try:
+            data_dict = self.settings.value('for_summ')
+            data_dict = eval(data_dict)
+            def summ_tabel(prof):
+                if prof == 3:
+                    money = 300
+                elif prof == 4:
+                    money = 400
+                elif prof == 5:
+                    money = 500
+                elif prof == 6:
+                    money = 600
+                elif prof == 7:
+                    money = 0
+                return money
+            new_dict = {}
+            # Пробегаемся по всем табельным
+            for tabel in  tabels:
+                # создаем для каждого табельного свой список замещающик
+                list_tabel = []
+                # создаем для каждого табельного словарь(замещающий: сумма)
+                new_dict ={}
+                # пробегаемся по значениям (ТАБЕЛЬНЫЙ, дата): табельный замещающего
+                for Key, Value in data_dict.items():
+                    # Проверяем если табельные совпадают
+                    if Key[0] == tabel:
+                        # задаем разряд
+                        prof = tabels[tabel]["разряд"]
+                        # задаем сумму для данного разряда
+                        money = summ_tabel(prof)
+                        # Добавляем в список табельный
+                        list_tabel.append(Value)
+                        # Создаем словарь (Табельный, сколько раз повторяется)
+                        c = Counter(list_tabel)
+                        new_dict ={}
+                        for key,value in dict(c).items():
+                            new_dict[Key[0],key] =int(value)*int(money)
+                        print(new_dict)
+                if new_dict == {}:
+                    continue
+                else:
+                    payment_list.append(new_dict)
+
+                    
+                        
+                            # if new_dict not in payment_list:
+                            #     payment_list.append(new_dict)
+            print(new_dict)
+            print(dict(c))
+            print(payment_list)
+            
+        except:
+            print(f'[INFO] -в блоке SUMM_PAY- {Exception}')
+
                   
     def parameters(self):
         #Задаем параметры таблицы
@@ -228,9 +342,9 @@ class MainWidget(QWidget):
         self.data_table_view.resizeColumnsToContents()
         #Показывае данные при изменении в ячейке
         self.model.itemChanged.connect(self.input_user_color_and_save)
-        #Показывает данные при клике на ячейку
-        #[INFO] ---  ИСПОЛЬЗУЕМ ФУНКЦИЮ
-        # self.data_table_view.clicked.connect(self.show_info)
+        self.model.itemChanged.connect(self.summ_pay)
+        
+
         self.top_layout.addWidget(self.data_table_view)
     
         
@@ -243,6 +357,8 @@ if __name__ == '__main__':
     main.add_replace_cell()
     main.load_data()
     main.parameters()
+    
+    # main.summ_pay()
     
     main.show()
 
