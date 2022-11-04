@@ -2,16 +2,9 @@ import configparser
 # from ctypes import alignment
 import json
 
-config = configparser.ConfigParser()
-config.read('temp.ini')
-# print(config['General']['for_summ'])     # -> "/path/name/"
-
 profession_code = 87100
 
-# config['DEFAULT']['path'] = '/var/shared/'    # update
-# config['DEFAULT']['default_message'] = 'Hey! help me!!'   # create
-# with open('FILE.INI', 'w') as configfile:    # save
-#     config.write(configfile)
+
 
 # Напишитеexcel
 with open("data\\all_data2.json", "r", encoding="utf-8") as file:
@@ -103,10 +96,61 @@ def reason_block():
         print("\n".join(f'{item[0]}-{item[1]} отсутствовал по причине {item[2]}' for item in reason_list_x))
     except IndexError:
          print("[INFO] - человек отработал весь месяц")
+    return reason_list_x
+
+def user_rework():
+    # config['DEFAULT']['path'] = '/var/shared/'    # update
+    # config['DEFAULT']['default_message'] = 'Hey! help me!!'   # create
+    # with open('FILE.INI', 'w') as configfile:    # save
+    # config.write(configfile)
+
+    config = configparser.ConfigParser()
+    config.read('temp.ini')
+    # print(config['General']['for_summ'])    # -> "/path/name/"
+    list_of_user_input = config['General']['for_summ']
+    list_of_user_input = eval(eval(list_of_user_input))
+
+    data_x = list(list_of_user_input.keys())[0][1]
+    data_z = data_x
+    personal = list(list_of_user_input.values())[0]
+    # print(personal+"hjjhjh")
+    remoove_day_list = [()]
+    item_namber = 0
+    # print(data_x)
+    personal_number = '406'
+    for key,value in (list_of_user_input).items():
+        # print(key,value)
+        if key[0] == personal_number:
+            print(f' {key[1]}-----{value}')
+            if value == personal:
+                data_z = key[1]
+                remoove_day_list[item_namber] = (data_x,data_z,value)
+    
+            if value != personal:
+                personal = value
+                data_x = key[1]
+                data_z = key[1]
+                item_namber+=1
+                remoove_day_list.append("")
+                remoove_day_list[item_namber] = (data_x,data_z,value)
+    # print(remoove_day_list)
+
+    return remoove_day_list
+
+def main():
+    reason = reason_block()
+    rework = user_rework()
+
+    print(reason)
+    print(rework)
+    for item in reason:
+        print(item)
+
 
 if __name__ == '__main__':
-    # reason_block_reason()
-    reason_block()
+    # reason_block()
+    # user_rework()
+    main()
 
 
 
