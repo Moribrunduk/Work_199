@@ -316,7 +316,7 @@ class MainWidget(QWidget):
                         new_dict ={}
                         for key,value in dict(c).items():
                             new_dict[Key[0],key] =int(value)*int(money)
-                        print(new_dict)
+                        # print(new_dict)
                 if new_dict == {}:
                     continue
                 else:
