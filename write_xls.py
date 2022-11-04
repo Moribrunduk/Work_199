@@ -21,28 +21,35 @@ with open("data\\all_data2.json", "r", encoding="utf-8") as file:
 
 tabels = all_data["шифр"]["87100"]["Табельный"]
 
-def write_excel():
-    # # рабочая часть файла
-    data = eval(config['General']['for_summ'])
-    print(data)
-    work_smens  = tabels["4"]["отработанные смены"]
-    print(work_smens)
-    
-
 def reason_block():
-    reasons = tabels["447"]["Причина пропуска смен"]
+    reasons = tabels["406"]["отработанные смены"]
+    # удаляем 15 элемент из списка(специфика из таблицы, т.к 15 элемент это элемент между 15 числом календаря и 16)
+    reasons.pop(15)
     data_list = []
     all_list = []
-    for key,value in reasons.items():
-        data_list.append((key,value))
-    # print(data_list)
+    for day,reason in enumerate(reasons,1):
+        data_list.append((day,reason))
     try:
-        #задаем первую причину отсутсвия
-        reason = data_list[0][1]
-        #задаем с какой даты отсутствовал
-        data_x = data_list[0][0]
-        #задаем по какую дату отсутствовал(для наачала это один и тотже день)
-        data_z = data_x
+        for number in range(0,len(data_list)):
+            if data_list[number][1] in range(0,25):
+                # print(f"{number+1}----{data_list[number][1]}")
+                continue
+            elif data_list[number][1] == "":
+                # print(f"{number+1}----({data_list[number][1]})")
+                continue
+            elif data_list[number][1] == "-":
+                # print(f"{number+1}----({data_list[number][1]})")
+                continue
+            else:
+                #задаем первую причину отсутсвия
+                reason = data_list[number][1]
+                #задаем с какой даты отсутствовал
+                data_x = data_list[number][0]
+                #задаем по какую дату отсутствовал(для наачала это один и тотже день)
+                data_z = data_x
+                # print(f"{number+1}----({data_list[number][1]})")
+                break
+        # print((data_x,data_z,reason))
         # так выглядит список(первый день отсутсвиия, последний, причина)
         all_info = (data_x,data_z,reason)
         #номер в списке отсутствия
@@ -50,7 +57,7 @@ def reason_block():
         # создаем список отсутсвия
         reason_list = [()]
         
-        for item in data_list:
+        for item in data_list[data_x:]:
             #если предыдущая причина отсутсвия совпадает с нынешней
             if item[1] == reason:
                 # заменяем последнюю дату отсутствия
@@ -75,26 +82,30 @@ def reason_block():
         # если в списке оказывается ""(такое случается если причина отсутсвия одна или их нет)
         if "" in reason_list:
             reason_list.remove("")
-        print(reason_list)
+        
+        # т.к в резудьтате предыдущей итерации в список попадают числа и "" и "-"
+        # очищаем от них список
+        
+        reason_list_x = []
+        for item in reason_list:
+                if item[2] in range(0,25):
+                    continue
+                elif item[2] == "":
+                    continue
+                elif item[2] == "-":
+                    continue
+                else:
+                    if item[0]<16:
+                        reason_list_x.append((item))
+                    else:
+                        reason_list
 
-        print("\n".join(f'{item[0]}-{item[1]} отсутствовал по причине {item[2]}' for item in reason_list))
+        print("\n".join(f'{item[0]}-{item[1]} отсутствовал по причине {item[2]}' for item in reason_list_x))
     except IndexError:
-        print("[INFO] - человек отработал весь месяц")
-
-
-        
-
-        
-        
-
-
-    
-    
-    
-
+         print("[INFO] - человек отработал весь месяц")
 
 if __name__ == '__main__':
-    # write_excel()
+    # reason_block_reason()
     reason_block()
 
 
