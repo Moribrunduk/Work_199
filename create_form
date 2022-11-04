@@ -1,7 +1,3 @@
-from calendar import month
-
-from xlrd import open_workbook
-from xlutils.copy import copy
 import xlwt
 
 def set_style(name ="Arial", height = 10*20, bold=False, ahorz=0x01, avert=0x01,awrap=0,borders_type=0):
@@ -23,9 +19,6 @@ def set_style(name ="Arial", height = 10*20, bold=False, ahorz=0x01, avert=0x01,
     borders.top = borders_type
     borders.bottom = borders_type
 
-
-    
-
     font = xlwt.Font()      # Создайте шрифт для шаблона
     font.name = name        # Определите определенные шрифты
 
@@ -39,19 +32,14 @@ def set_style(name ="Arial", height = 10*20, bold=False, ahorz=0x01, avert=0x01,
     return style
 
 
-start_row = 0
-column = 13
-# Напишитеexcel
-def write_excel(start_row = 0,column = 13):
-    # создаем документ
-    workbook =xlwt.Workbook()
-    # Получать рабочий лист
-    worksheet = workbook.add_sheet('form')
-    
-    # Подготовьте контент для входа
-    values = ['Воронов Е.М. \n таб. 479 разряд 5','отпуск \n 07.11.2022','Илюхин Ю.В.\n таб. 473 разряд 5','3000']
-    
+# создаем документ
+workbook =xlwt.Workbook()
+# Получать рабочий лист
+worksheet = workbook.add_sheet('form')
+
+def write_excel(start_row = 0):
     # редактируемые данные
+    
     month_with_sfx ="марта"
     year = '2022'
     number_vedom = "171"
@@ -80,6 +68,7 @@ def write_excel(start_row = 0,column = 13):
     worksheet.write(start_row+2, 4, value_7, set_style())
 
     value_8 = '№ п/п'
+    #sheet.merge(top_row, bottom_row, left_column, right_column)
     worksheet.merge(start_row+8,start_row+8+4,1,1, set_style(borders_type=2))
     worksheet.write(start_row+8, 1, value_8, set_style(awrap=1, ahorz=0x02,borders_type=2))
 
@@ -142,25 +131,12 @@ def write_excel(start_row = 0,column = 13):
     value_21 =f'{main_person}{int((142-x_value_21)/4)*"_"}/{main_person_name} / Мастер (руководитель работ){int((135-x_value_21)/4)*"_"}/{int((135-x_value_21)/4)*"_"}{botiz}{int((135-x_value_21)/4)*"_"}/{botiz_name}/'
     worksheet.write(start_row+37, 1, value_21, set_style(ahorz=0x01))
 
-    value_22 ='                                  подпись,дата                                                                                подпись,дата                                                        подпись,дата'
+    value_22 =f'{34*" "}подпись,дата{80*" "}подпись,дата{56*" "}подпись,дата'
     worksheet.write(start_row+38, 1, value_22, set_style(ahorz=0x01))
+    
 
     value_23 = 'ф.56.61.70'
     worksheet.write(start_row+39, 12, value_23, set_style(ahorz=0x03))
-
-
-
-
-
-
-
-
-
-	
-
-
-
-
 
     # форматирование таблицы
     col_width = [987,1206,2889,4425,2669,1938,2048,2340,2340,2669,4169,3547,4059,950] #стянуто из рабочего файла
@@ -168,20 +144,15 @@ def write_excel(start_row = 0,column = 13):
     for item in col_width:
         worksheet.col(col).width = item
         col+=1
-    
-	
-    	
-    
-    # xlwtСпособ написания объекта, параметры - это линия, столбец, значение соответственно
-    
 
-
-    #sheet.merge(top_row, bottom_row, left_column, right_column)
-    
-
-    # xlwtМетод сохранения объекта, затем покрыл оригиналexcel
-    workbook.save("form.xls")
-
+def create_file():
+     page_breaks = []
+     for item in range(0,90,40):
+          write_excel(start_row=item)
+          page_breaks.append((item+40,0,0))
+          worksheet.horz_page_breaks = page_breaks
+     worksheet.set_portrait(False)
 
 if __name__ == '__main__':
-    write_excel()
+     create_file()
+     workbook.save("form.xls")
