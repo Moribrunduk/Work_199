@@ -1,4 +1,5 @@
 import configparser
+
 # from ctypes import alignment
 import json
 
@@ -93,7 +94,7 @@ def reason_block():
                     else:
                         reason_list
 
-        print("\n".join(f'{item[0]}-{item[1]} отсутствовал по причине {item[2]}' for item in reason_list_x))
+        # print("\n".join(f'{item[0]}-{item[1]} отсутствовал по причине {item[2]}' for item in reason_list_x))
     except IndexError:
          print("[INFO] - человек отработал весь месяц")
     return reason_list_x
@@ -109,43 +110,107 @@ def user_rework():
     # print(config['General']['for_summ'])    # -> "/path/name/"
     list_of_user_input = config['General']['for_summ']
     list_of_user_input = eval(eval(list_of_user_input))
+    # print (list_of_user_input)
 
+    # задаем начальный день, когда первый раз идет замещение
     data_x = list(list_of_user_input.keys())[0][1]
+    # Приравниваем конечный день, к начальному, чтобы изменять в дальнейшем
     data_z = data_x
+    # первый заамещающий, чтобы потом изменять
     personal = list(list_of_user_input.values())[0]
-    # print(personal+"hjjhjh")
+    # создаем лист замещения
     remoove_day_list = [()]
     item_namber = 0
     # print(data_x)
     personal_number = '406'
-    for key,value in (list_of_user_input).items():
-        # print(key,value)
-        if key[0] == personal_number:
-            print(f' {key[1]}-----{value}')
+    #создаем словарь для того чтобы добавить в него "-" в дни, когда небыло замещений(новый, чтобы попорядку)
+    list_of_user_input_selected_number = {}
+    # создаем цикл в который добавляем дни где небыло замещения
+    for day in range(1,32):
+        # если ключа (табельный, день) нет в словаре
+        if (personal_number,str(day)) not in list_of_user_input:
+            # добавляем такой ключ со значением "-"
+            list_of_user_input_selected_number[personal_number,str(day)] = "-"
+        else:
+            # если такой ключ есть добавляем его в новый словарь
+            list_of_user_input_selected_number[personal_number,str(day)] = list_of_user_input[personal_number,str(day)]
+
+    # Пробегаемся по этому словарю, чтобы вычислить периоды замещения
+    for key,value in list_of_user_input_selected_number.items():
+           
+            # if key[0] == personal_number:
+                # print(f' {key[1]}-----{value}')
+            # если значение ключа равно предыдущему значению(значение personal первое выбрано в самом начале)
             if value == personal:
+                # то меняем дату окончания замещения
                 data_z = key[1]
+                # перезаписываем пару(ключ)=значение
                 remoove_day_list[item_namber] = (data_x,data_z,value)
     
             if value != personal:
+                # если в итерации поменялся табельный замещающего
+                # перезаписываем этот табельный
                 personal = value
+                # устанавливаем первый день замещения
                 data_x = key[1]
+                # устанавливаем последний день замещения
                 data_z = key[1]
+                # прибавляем к количеству элементов номер 1
                 item_namber+=1
+                # добавляем в лист новый элемент
                 remoove_day_list.append("")
+                # заполняем этот элемент
                 remoove_day_list[item_namber] = (data_x,data_z,value)
-    # print(remoove_day_list)
+    
+    for item in remoove_day_list:
+        if item[2] == "-":
+            remoove_day_list.remove(item)
 
+    # print(remoove_day_list)
     return remoove_day_list
 
 def main():
-    reason = reason_block()
+    reasons = reason_block()
     rework = user_rework()
 
-    print(reason)
+    print(reasons)
     print(rework)
-    for item in reason:
-        print(item)
+    final_list = [()]
+    count = 0
+    for reason in reasons:
+        #обьявляем начальный день
+        item_x = reason[0]
+        #обьявляем конечный день
+        item_z = item_x
+        #обьявляем первый табельный
+        number = rework[0][2]
 
+        for item in rework:
+            if number == item[2]:
+                if int(reason[0])<=int(item[0])<=int(item[1])<=int(reason[1]):
+                    # print(f"{item} входит в {reason}")
+                    item_z = item[1]
+                    
+            else:
+                final_list[count] = ("406",item_x,item_z,number)
+                number = item[2]
+                item_x = item[0]
+                item_z = item_x
+                final_list.append((""))
+                count =+1
+                final_list[count] = ("406",item_x,item_z,number)
+                if int(reason[0])<=int(item[0])<=int(item[1])<=int(reason[1]):
+                    # print(f"{item} входит в {reason}")
+                    item_z = item[1]
+                    
+            print(f"[info] - {item_x,item_z}")
+    print(final_list)
+                
+                
+            
+            
+
+    
 
 if __name__ == '__main__':
     # reason_block()
