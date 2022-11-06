@@ -254,7 +254,9 @@ class MainWidget(QWidget):
                 print("-")
         
         self.settings.setValue("input_user", str(save_input_user_for_load_in_file))
+        # self.settings.beginGroup("406")
         self.settings.setValue("for_summ", str(save_input_user_for_summ_in_file))
+        # self.settings.endGroup()
         print(save_input_user_for_load_in_file)
         print(save_input_user_for_summ_in_file)
 
