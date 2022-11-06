@@ -35,9 +35,9 @@ def set_style(name ="Arial", height = 10*20, bold=False, ahorz=0x01, avert=0x01,
 # создаем документ
 workbook =xlwt.Workbook()
 # Получать рабочий лист
-worksheet = workbook.add_sheet('form')
+# worksheet = workbook.add_sheet('form')
 
-def write_excel(start_row = 0):
+def write_excel(worksheet,start_row = 0):
     # редактируемые данные
     
     month_with_sfx ="марта"
@@ -145,14 +145,16 @@ def write_excel(start_row = 0):
         worksheet.col(col).width = item
         col+=1
 
-def create_file():
+def create_file(worksheet,count=40):
      page_breaks = []
-     for item in range(0,90,40):
-          write_excel(start_row=item)
+     for item in range(0,count,40):
+          write_excel(worksheet,start_row=item)
           page_breaks.append((item+40,0,0))
           worksheet.horz_page_breaks = page_breaks
      worksheet.set_portrait(False)
+     
 
 if __name__ == '__main__':
      create_file()
      workbook.save("form.xls")
+     
