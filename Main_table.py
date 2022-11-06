@@ -190,7 +190,7 @@ class MainWidget(QWidget):
                 date = self.model.index(1,column-16).data()
                 user_input = self.data_table_view.currentIndex().data()
                 if user_input in tabels[tabel]["Замещающие"][date]:
-                    # self.model.item(row, column).setBackground(QtGui.QColor(0,128,0))
+                    self.model.item(row, column).setBackground(QtGui.QColor(0,128,0))
 
                     save_input_user_for_load_in_file[row,column] = user_input, (0,128,0)
 
@@ -199,7 +199,7 @@ class MainWidget(QWidget):
                                                     ] =  user_input
 
                 elif user_input =="":
-                    # self.model.item(row, column).setBackground(QtGui.QColor(0,128,128))
+                    self.model.item(row, column).setBackground(QtGui.QColor(0,128,128))
                     try:
 
                         del save_input_user_for_load_in_file[row,column] 
@@ -212,7 +212,7 @@ class MainWidget(QWidget):
                     
 
                 elif user_input not in tabels[tabel]["Замещающие"][date]:
-                    # self.model.item(row, column).setBackground(QtGui.QColor(255,0,0))
+                    self.model.item(row, column).setBackground(QtGui.QColor(255,0,0))
                     save_input_user_for_load_in_file[row,column] = user_input, (255,0,0)
 
                     save_input_user_for_summ_in_file[self.model.index(row-1,0).data(),
@@ -227,7 +227,7 @@ class MainWidget(QWidget):
                 date = self.model.index(0,column-16).data()
                 user_input = self.data_table_view.currentIndex().data()
                 if user_input in tabels[tabel]["Замещающие"][date]:
-                    # self.model.item(row, column).setBackground(QtGui.QColor(0,128,0))
+                    self.model.item(row, column).setBackground(QtGui.QColor(0,128,0))
                     save_input_user_for_load_in_file[row,column] = user_input, (0,128,0)
                     save_input_user_for_summ_in_file[self.model.index(row,0).data(),
                                                     self.model.index(0,column-16).data()
@@ -245,7 +245,7 @@ class MainWidget(QWidget):
                         pass
 
                 elif user_input not in tabels[tabel]["Замещающие"][date]:
-                    # self.model.item(row, column).setBackground(QtGui.QColor(255,0,0))
+                    self.model.item(row, column).setBackground(QtGui.QColor(255,0,0))
                     save_input_user_for_load_in_file[row,column] = user_input, (255,0,0)
                     save_input_user_for_summ_in_file[self.model.index(row,0).data(),
                                                     self.model.index(0,column-16).data()

@@ -1,5 +1,5 @@
 import configparser
-
+import os
 # from ctypes import alignment
 import json
 
@@ -8,6 +8,8 @@ profession_code = 87100
 
 config = configparser.ConfigParser()
 config.read('temp.ini')
+substitutes = configparser.ConfigParser()
+substitutes.read('datalist of substitutes')
 # config['DEFAULT']['path'] = '/var/shared/'    # update
     # config['DEFAULT']['default_message'] = 'Hey! help me!!'   # create
     # with open('FILE.INI', 'w') as configfile:    # save
@@ -30,6 +32,7 @@ def reason_block(tabel_for_function):
         # удаляем 15 элемент из списка(специфика из таблицы, т.к 15 элемент это элемент между 15 числом календаря и 16)
         reasons.pop(15)
         data_list = []
+        all_info =()
         for day,reason in enumerate(reasons,1):
             data_list.append((day,reason))
         try:
@@ -81,15 +84,8 @@ def reason_block(tabel_for_function):
                     reason = item[1]
                     all_info = (data_x,data_z,reason)
                     # print(all_info)
-            
-            # если в списке оказывается ""(такое случается если причина отсутсвия одна или их нет)
-            if "" in reason_list:
-                reason_list.remove("")
-            
-            
             # т.к в резудьтате предыдущей итерации в список попадают числа и "" и "-"
             # очищаем от них список
-            
             reason_list_x = []
             for item in reason_list:
                     if item[2] in range(0,25):
@@ -99,14 +95,10 @@ def reason_block(tabel_for_function):
                     elif item[2] == "-":
                         continue
                     else:
-                        if item[0]<16:
-                            reason_list_x.append((item))
-                        else:
-                            reason_list
-
-            # print("\n".join(f'{item[0]}-{item[1]} отсутствовал по причине {item[2]}' for item in reason_list_x))
+                        reason_list_x.append((item))
         except IndexError:
             print("[INFO] - человек отработал весь месяц")
+    print(reason_list_x)
     return reason_list_x
 
 def user_rework(tabel_for_function):
@@ -122,10 +114,6 @@ def user_rework(tabel_for_function):
     data_x = list(list_of_user_input.keys())[0][1]
     # Приравниваем конечный день, к начальному, чтобы изменять в дальнейшем
     data_z = data_x
-    
-    # personal = list(list_of_user_input.values())[0]
-    # print(list(list_of_user_input.keys()))
-    # print(personal)
     # создаем лист замещения
     remoove_day_list = [()]
     item_namber = 0
@@ -180,10 +168,10 @@ def user_rework(tabel_for_function):
 def write_in_file(tabel_for_function):
     #список содержаший (первый день отсутсвия, последнйи,причина отсутствия)
     reasons = reason_block(tabel_for_function)
-    print(reasons)
+    # print(reasons)
     #список содержащий(первй день замещения, последний день замещения, табельный замещающего)
     rework = user_rework(tabel_for_function)
-    print(rework)
+    # print(rework)
     if reasons ==[]:
         final_list=[]
     elif rework ==[]:
@@ -204,7 +192,7 @@ def write_in_file(tabel_for_function):
             # пробегаемся по элементам списка пропущенных смен
             for item in rework:
                 # проверяем изменился ли табельный
-                if tabel_number == item[2]:
+                if tabel_number == int(item[2]):
                     # проверяем входят ли дни когда этот табельный замещает, в причину замещения
                     if int(reason[0])<=int(item[0])<=int(item[1])<=int(reason[1]):
                         # изменяем крайний день замещения
@@ -228,43 +216,26 @@ def write_in_file(tabel_for_function):
                         # заполняем это значение списком
                         final_list[count] = (tabel_for_function,reason[2],Day_x,Day_z,tabel_number)
         # удаляем из списка пустой элемент("откуда взялся хз")                
-        final_list.remove(())
+        # final_list.remove(())
     print(final_list)
-    substitutes= configparser.ConfigParser()
-    substitutes.read("list of substitutes.ini")
-    substitutes.set('DEFAULT',f'{tabel_for_function}',str(final_list))
-    with open('data\datalist of substitutes.ini', 'a', encoding="utf-8") as configfile: 
+    
+
+    substitutes['DEFAULT'][f'{tabel_for_function}'] = str(final_list)
+    with open('data\datalist of substitutes.ini', 'w', encoding="utf-8") as configfile: 
         substitutes.write(configfile)   
 
 
-def test():
-    # # 438,447,448,453,464,473,479,480,487,491,503,509,513,516,517,530,531,535,544,548,563,566,601,602,608
-    # tabel = "438"
+    
+def MAIN_FINCTION():
     for tabel in tabels:
-    # tabel = 448
-        try:
-            reason_block(tabel_for_function=str(tabel))
-        except:
-            print(f"ошибка в блоке 1[reason_block]----{tabel}")
-            
-        try:
-            user_rework(tabel_for_function=str(tabel))
-        except:
-            print(f"ошибка в блоке 2[user rework]----{tabel}")
         try:
             write_in_file(tabel_for_function=str(tabel))
         except:
-            print(f"ошибка в блоке 3[write in file]----{tabel}")
-def MAIN_FINCTION():
-    # for tabel in tabels:
-        # reason_block(tabel_for_function="406")
-        # user_rework(tabel_for_function="406")
-        # write_in_file(tabel_for_function="406")
-    pass     
+            print(f"ошибка в блоке 3[write in file]----{tabel}")  
             
 if __name__ == '__main__':
-    # MAIN_FINCTION()
-    test()
+    MAIN_FINCTION()
+    
 
 
 
