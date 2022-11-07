@@ -21,7 +21,7 @@ with open("data\\all_data2.json", "r", encoding="utf-8") as file:
 
 # разработано для работы по одному шифру
 
-tabels = all_data["шифр"]["87100"]["Табельный"]
+tabels = all_data["шифр"][str(profession_code)]["Табельный"]
 
 def reason_block(tabel_for_function):
     # проверяем если нет смен отсутствия, сразу создаем список на выход
@@ -220,7 +220,7 @@ def write_in_file(tabel_for_function):
     print(final_list)
     
 
-    substitutes['DEFAULT'][f'{tabel_for_function}'] = str(final_list)
+    substitutes['DEFAULT'][f'{profession_code},{tabel_for_function}'] = str(final_list)
     with open('data\datalist of substitutes.ini', 'w', encoding="utf-8") as configfile: 
         substitutes.write(configfile)   
 
