@@ -1,6 +1,6 @@
 import xlwt
 
-def set_style(name ="Arial", height = 10*20, bold=False, ahorz=0x01, avert=0x01,awrap=0,borders_type=0):
+def set_style(name="Arial", height = 10*20, bold=False, ahorz=0x01, avert=0x01,awrap=0,bordleft=0, bordright=0,bordtop=0,bordbottom=0):
     style = xlwt.XFStyle()  # Шаблон инициализации
     # Установить выравнивание ячеек
     alignment = xlwt.Alignment()
@@ -14,10 +14,10 @@ def set_style(name ="Arial", height = 10*20, bold=False, ahorz=0x01, avert=0x01,
     borders = xlwt.Borders()
          # Тонкая сплошная линия: 1, маленькая толстая сплошная линия: 2, тонкая пунктирная линия: 3, средняя тонкая пунктирная линия: 4, большая толстая сплошная линия: 5, двойная линия: 6, тонкая пунктирная линия: 7
          # Большая толстая пунктирная линия: 8, тонкая пунктирная линия: 9, толстая пунктирная линия: 10, тонкая двойная пунктирная линия: 11, толстая двойная пунктирная линия: 12, наклонная пунктирная линия: 13
-    borders.left = borders_type
-    borders.right = borders_type
-    borders.top = borders_type
-    borders.bottom = borders_type
+    borders.left = bordleft
+    borders.right = bordright
+    borders.top = bordtop
+    borders.bottom = bordbottom
 
     font = xlwt.Font()      # Создайте шрифт для шаблона
     font.name = name        # Определите определенные шрифты
@@ -30,6 +30,8 @@ def set_style(name ="Arial", height = 10*20, bold=False, ahorz=0x01, avert=0x01,
 
     style.font = font       # Наконец определите пользовательские шрифты, определенные в стиле
     return style
+
+    
 
 
 # создаем документ
@@ -69,56 +71,56 @@ def write_excel(worksheet,start_row = 0):
 
     value_8 = '№ п/п'
     #sheet.merge(top_row, bottom_row, left_column, right_column)
-    worksheet.merge(start_row+8,start_row+8+4,1,1, set_style(borders_type=2))
-    worksheet.write(start_row+8, 1, value_8, set_style(awrap=1, ahorz=0x02,borders_type=2))
+    worksheet.merge(start_row+8,start_row+8+4,1,1, set_style(bordleft=2, bordright=2,bordtop=2,bordbottom=2))
+    worksheet.write(start_row+8, 1, value_8, set_style(awrap=1, ahorz=0x02,bordleft=2, bordright=2,bordtop=2,bordbottom=2))
 
     value_9 = 'Отсутствующий работник, вакантная должность'
-    worksheet.merge(start_row+8,start_row+8,2,6,set_style(borders_type=2))
-    worksheet.write(start_row+8, 2, value_9, set_style(ahorz=0x02,borders_type=2))
+    worksheet.merge(start_row+8,start_row+8,2,6,set_style(bordleft=2, bordright=2,bordtop=2,bordbottom=2))
+    worksheet.write(start_row+8, 2, value_9, set_style(ahorz=0x02,bordleft=2, bordright=2,bordtop=2,bordbottom=2))
 
     value_10 = 'Работник исполняющий обязанности временно отсутствующего'
-    worksheet.merge(start_row+8,start_row+8,7,12,set_style(borders_type=2))
-    worksheet.write(start_row+8, 7, value_10, set_style(ahorz=0x02,borders_type=2))
+    worksheet.merge(start_row+8,start_row+8,7,12,set_style(bordleft=2, bordright=2,bordtop=2,bordbottom=2))
+    worksheet.write(start_row+8, 7, value_10, set_style(ahorz=0x02,bordleft=2, bordright=2,bordtop=2,bordbottom=2))
 
     value_11 = 'Фамилия И.О., таб. №	'
-    worksheet.merge(start_row+9,start_row+10,2,3,set_style(borders_type=2))
-    worksheet.write(start_row+9, 2, value_11, set_style(ahorz=0x02,borders_type=2))
+    worksheet.merge(start_row+9,start_row+10,2,3,set_style(bordleft=2, bordright=2,bordtop=2,bordbottom=2))
+    worksheet.write(start_row+9, 2, value_11, set_style(ahorz=0x02,bordleft=2, bordright=2,bordtop=2,bordbottom=2))
 
     value_12 = 'Профессия (должность),  разряд'
-    worksheet.merge(start_row+11,start_row+12,2,3,set_style(borders_type=2))
-    worksheet.write(start_row+11, 2, value_12, set_style(ahorz=0x02,borders_type=2))
+    worksheet.merge(start_row+11,start_row+12,2,3,set_style(bordleft=2, bordright=2,bordtop=2,bordbottom=2))
+    worksheet.write(start_row+11, 2, value_12, set_style(ahorz=0x02,bordleft=2, bordright=2,bordtop=2,bordbottom=2))
 
     value_13 = 'Причина отсутствия'
-    worksheet.merge(start_row+9,start_row+10,4,5,set_style(borders_type=2))
-    worksheet.write(start_row+9, 4, value_13, set_style(ahorz=0x02,borders_type=2))
+    worksheet.merge(start_row+9,start_row+10,4,5,set_style(bordleft=2, bordright=2,bordtop=2,bordbottom=2))
+    worksheet.write(start_row+9, 4, value_13, set_style(ahorz=0x02,bordleft=2, bordright=2,bordtop=2,bordbottom=2))
 
     value_14 = 'Период отсутствия'
-    worksheet.merge(start_row+11,start_row+12,4,5,set_style(borders_type=2))
-    worksheet.write(start_row+11, 4, value_14, set_style(ahorz=0x02,borders_type=2))
+    worksheet.merge(start_row+11,start_row+12,4,5,set_style(bordleft=2, bordright=2,bordtop=2,bordbottom=2))
+    worksheet.write(start_row+11, 4, value_14, set_style(ahorz=0x02,bordleft=2, bordright=2,bordtop=2,bordbottom=2))
 
     value_15 = 'Тариф (оклад), руб'
-    worksheet.merge(start_row+9,start_row+12,6,6,set_style(borders_type=2))
-    worksheet.write(start_row+9, 6, value_15, set_style(awrap=1,ahorz=0x02,borders_type=2))
+    worksheet.merge(start_row+9,start_row+12,6,6,set_style(bordleft=2, bordright=2,bordtop=2,bordbottom=2))
+    worksheet.write(start_row+9, 6, value_15, set_style(awrap=1,ahorz=0x02,bordleft=2, bordright=2,bordtop=2,bordbottom=2))
 
     value_16 = 'Фамилия И.О., таб. №'
-    worksheet.merge(start_row+9,start_row+10,7,9,set_style(borders_type=2))
-    worksheet.write(start_row+9, 7, value_16, set_style(ahorz=0x02,borders_type=2))
+    worksheet.merge(start_row+9,start_row+10,7,9,set_style(bordleft=2, bordright=2,bordtop=2,bordbottom=2))
+    worksheet.write(start_row+9, 7, value_16, set_style(ahorz=0x02,bordleft=2, bordright=2,bordtop=2,bordbottom=2))
 
     value_17 = 'Профессия (должность), разряд'
-    worksheet.merge(start_row+11,start_row+12,7,9,set_style(borders_type=2))
-    worksheet.write(start_row+11, 7, value_17, set_style(ahorz=0x02,borders_type=2))
+    worksheet.merge(start_row+11,start_row+12,7,9,set_style(bordleft=2, bordright=2,bordtop=2,bordbottom=2))
+    worksheet.write(start_row+11, 7, value_17, set_style(ahorz=0x02,bordleft=2, bordright=2,bordtop=2,bordbottom=2))
 
     value_18 = 'Предварительный % оплаты от тарифа (оклада) отсутствующего'
-    worksheet.merge(start_row+9,start_row+12,10,10,set_style(borders_type=2))
-    worksheet.write(start_row+9, 10, value_18, set_style(awrap=1,ahorz=0x02,borders_type=2))
+    worksheet.merge(start_row+9,start_row+12,10,10,set_style(bordleft=2, bordright=2,bordtop=2,bordbottom=2))
+    worksheet.write(start_row+9, 10, value_18, set_style(awrap=1,ahorz=0x02,bordleft=2, bordright=2,bordtop=2,bordbottom=2))
 
     value_19 = 'Согласие на исполнение, подпись, дата'
-    worksheet.merge(start_row+9,start_row+12,11,11,set_style(borders_type=2))
-    worksheet.write(start_row+9, 11, value_19, set_style(awrap=1,ahorz=0x02,borders_type=2))
+    worksheet.merge(start_row+9,start_row+12,11,11,set_style(bordleft=2, bordright=2,bordtop=2,bordbottom=2))
+    worksheet.write(start_row+9, 11, value_19, set_style(awrap=1,ahorz=0x02,bordleft=2, bordright=2,bordtop=2,bordbottom=2))
     
     value_20 = 'Окончательный размер оплаты, руб.'
-    worksheet.merge(start_row+9,start_row+12,12,12,set_style(borders_type=2))
-    worksheet.write(start_row+9, 12, value_20, set_style(awrap=1,ahorz=0x02,borders_type=2))
+    worksheet.merge(start_row+9,start_row+12,12,12,set_style(bordleft=2, bordright=2,bordtop=2,bordbottom=2))
+    worksheet.write(start_row+9, 12, value_20, set_style(awrap=1,ahorz=0x02,bordleft=2, bordright=2,bordtop=2,bordbottom=2))
 
     main_person = 'Начальник НИТИЦ'
     main_person_name = 'А.И. Власов'

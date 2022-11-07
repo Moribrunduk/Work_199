@@ -11,7 +11,7 @@ profession_code = 87100
 month = "03"
 year = "22"
 tarif = {"87100":{6:9798,5:8910,4:8105,3:7365},"87200":{6:9798,5:8910,4:8105,3:7365},"08300":{6:9798,5:8910,4:8105,3:7365}}
-procent = {"87100":{"30"},"87200":{"30"},"08300":{"70"}}
+procent = {"87100":"30","87200":"30","08300":"70"}
 
 with open("data\\all_data2.json", "r", encoding="utf-8") as file:
         all_data = json.load(file)
@@ -127,61 +127,84 @@ def write_to_file_string(profession_code = "87100" ):
     # считаем количество строк которые нужно создать в документе
     # количество строк в замещении делим на 15(количество позиций возможные в документе)
     # округляем до большего
-    count = math.ceil(number_of_rows/15)*40
+    count = math.ceil(number_of_rows/11)*40
     create_file(worksheet=worksheet,count=count)
     
     # передаем информацию для записи
     list_for_write = load_data_and_create_list()
-    print(list_for_write[0])
     
     def write_row(start_row,start_column,count,value):
         #sheet.merge(top_row, bottom_row, left_column, right_column)
 
         # записываем порядковый номер:
-        worksheet.merge(start_row,start_row+1,start_column,start_column, set_style(borders_type=2))
-        worksheet.write(start_row, start_column,str(count), set_style(ahorz=0x02,borders_type=2))
+        worksheet.merge(start_row,start_row+1,start_column,start_column, set_style(bordleft=2, bordright=2,bordtop=2,bordbottom=2))
+        worksheet.write(start_row, start_column,str(count), set_style(ahorz=0x02,bordleft=2, bordright=2,bordtop=2,bordbottom=2))
 
         # записываем фамилию имя замещаемого:
-        worksheet.merge(start_row,start_row,start_column+1,start_column+2, set_style())
-        worksheet.write(start_row, start_column+1,value[0], set_style(ahorz=0x02))
+        worksheet.merge(start_row,start_row,start_column+1,start_column+2, set_style(bordleft=2,bordright=2,bordtop=2))
+        worksheet.write(start_row, start_column+1,value[0], set_style(ahorz=0x02,bordleft=2,bordtop=2))
 
         # записываем профессию и разряд
-        worksheet.merge(start_row+1,start_row+1,start_column+1,start_column+2, set_style())
-        worksheet.write(start_row+1, start_column+1,value[1], set_style(ahorz=0x02))
+        worksheet.merge(start_row+1,start_row+1,start_column+1,start_column+2, set_style(bordleft=2, bordright=2,bordbottom=2))
+        worksheet.write(start_row+1, start_column+1,value[1], set_style(ahorz=0x02,bordleft=2, bordright=2,bordbottom=2))
 
         # записываем причину отсутствия
-        worksheet.merge(start_row,start_row,start_column+3,start_column+4, set_style())
-        worksheet.write(start_row, start_column+3,value[2], set_style(ahorz=0x02))
+        worksheet.merge(start_row,start_row,start_column+3,start_column+4, set_style(bordleft=2,bordright=2,bordtop=2))
+        worksheet.write(start_row, start_column+3,value[2], set_style(ahorz=0x02,bordleft=2,bordtop=2))
 
         # записываем период отсутствия
-        worksheet.merge(start_row+1,start_row+1,start_column+3,start_column+4, set_style())
-        worksheet.write(start_row+1, start_column+3,value[3], set_style(ahorz=0x02))
+        worksheet.merge(start_row+1,start_row+1,start_column+3,start_column+4, set_style(bordleft=2, bordright=2,bordbottom=2))
+        worksheet.write(start_row+1, start_column+3,value[3], set_style(ahorz=0x02,bordleft=2, bordright=2,bordbottom=2))
 
         # записываем тариф
-        worksheet.merge(start_row,start_row+1,start_column+5,start_column+5, set_style())
-        worksheet.write(start_row, start_column+5,value[-1], set_style(ahorz=0x02))
+        worksheet.merge(start_row,start_row+1,start_column+5,start_column+5, set_style(bordleft=2, bordright=2,bordtop=2,bordbottom=2))
+        worksheet.write(start_row, start_column+5,value[-1], set_style(ahorz=0x02,bordleft=2, bordright=2,bordtop=2,bordbottom=2))
 
         # записываем фамилию замещающего
-        worksheet.merge(start_row,start_row,start_column+6,start_column+8, set_style())
-        worksheet.write(start_row, start_column+6,value[4], set_style(ahorz=0x02))
+        worksheet.merge(start_row,start_row,start_column+6,start_column+8, set_style(bordleft=2, bordright=2,bordtop=2))
+        worksheet.write(start_row, start_column+6,value[4], set_style(ahorz=0x02,bordleft=2,bordtop=2))
 
         # записываем профессию и разряд
-        worksheet.merge(start_row+1,start_row+1,start_column+6,start_column+8, set_style())
-        worksheet.write(start_row+1, start_column+6,value[5], set_style(ahorz=0x02))
+        worksheet.merge(start_row+1,start_row+1,start_column+6,start_column+8, set_style(bordleft=2, bordright=2,bordbottom=2))
+        worksheet.write(start_row+1, start_column+6,value[5], set_style(ahorz=0x02,bordleft=2, bordright=2,bordbottom=2))
+        
+        # записываем процент оплаты от тарифа
+        worksheet.merge(start_row,start_row+1,start_column+9,start_column+9, set_style(bordleft=2, bordright=2,bordtop=2,bordbottom=2))
+        worksheet.write(start_row, start_column+9,f"{procent[str(profession_code)]}%", set_style(ahorz=0x02,bordleft=2, bordright=2,bordtop=2,bordbottom=2))
+
+        # согласие на исполнение(обьединение ячеек)
+        worksheet.merge(start_row,start_row+1,start_column+10,start_column+10, set_style(bordleft=2, bordright=2,bordtop=2,bordbottom=2))
+        worksheet.write(start_row, start_column+10,"", set_style(ahorz=0x02,bordleft=2, bordright=2,bordtop=2,bordbottom=2))
+        
+        # окончательный размер оплаты(обьединение ячеек)
+        worksheet.merge(start_row,start_row+1,start_column+11,start_column+11, set_style(bordleft=2, bordright=2,bordtop=2,bordbottom=2))
+        worksheet.write(start_row, start_column+11,"", set_style(ahorz=0x02,bordleft=2, bordright=2,bordtop=2,bordbottom=2))
+        
 
 
 
 
+    def write_file():
+        # Информация для заполнения первой строниы(13 строка на ней заканчивается форма)
+        start_row = 13
+        start_column = 1
+        # считаем количество строк
+        end_of_count = len(list_for_write)
+        row_count = 0
+        for count in range(0,end_of_count):
+            if count >10 and count%11==0:
+                 start_row+=18
+                 value = list_for_write[count]
+                 write_row(start_row+row_count,start_column,count+1,value)
+                 row_count+=2
+            else:
+                value = list_for_write[count]
+                write_row(start_row+row_count,start_column,count+1,value)
+                row_count+=2
+            
 
-
-
-
-
-
-
-
-    value = list_for_write[0]
-    write_row(13,1,1,value)
+    write_file()
+    
     
 
     workbook.save("test.xls")
