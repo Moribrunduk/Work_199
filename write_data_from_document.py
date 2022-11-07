@@ -19,15 +19,14 @@ profession_code = 87100
 month = "03"
 year = "22"
 tarif = {"87100":{6:9798,5:8910,4:8105,3:7365},"87200":{6:9798,5:8910,4:8105,3:7365},"08300":{6:9798,5:8910,4:8105,3:7365}}
-print(tarif["87100"])
 
 with open("data\\all_data2.json", "r", encoding="utf-8") as file:
         all_data = json.load(file)
+substitutes = configparser.ConfigParser()
+substitutes.read('data\datalist of substitutes.ini',encoding='utf-8')
 
-tabels = all_data["шифр"][str(profession_code)]["Табельный"]
 
-
-def load_data_and_create_list(personal_number):
+def load_data_and_create_list(profession_code="87100"):
 
     """
     функция которая загружает данные из файла datalist of subtitutes.ini
@@ -42,6 +41,8 @@ def load_data_and_create_list(personal_number):
 
     """
 
+    tabels = all_data["шифр"][str(profession_code)]["Табельный"]
+
     # задаем название професии
     profession_name = ""
     if str(profession_code) == "87100":
@@ -53,15 +54,8 @@ def load_data_and_create_list(personal_number):
     else:
         profession_name = "Неизвестный код"
 
-    # задаем полную причину отсутствия
-
-    information = all_data["шифр"][str(profession_code)]["Табельный"]
-    
-    substitutes = configparser.ConfigParser()
-    substitutes.read('data\datalist of substitutes.ini',encoding='utf-8')
-    x = eval(substitutes["DEFAULT"][f"{profession_code},{personal_number}"])
-
     def print_name(tabel):
+        information = all_data["шифр"][str(profession_code)]["Табельный"]
         name = F'{information[tabel]["фамилия"]} {information[tabel]["инициалы"]}'
         return name
     
@@ -105,32 +99,30 @@ def load_data_and_create_list(personal_number):
         
         return period
     
-    def print_cvalification(tabel:str): 
-        cvalification = information[tabel]["разряд"]
+    def print_cvalification(tabel): 
+        cvalification = all_data["шифр"][str(profession_code)]["Табельный"][tabel]["разряд"]
         return cvalification
     
     def create_list_for_write_xls():
         list_for_write_xls = []
-        for item in x:
-            list_for_write_xls.append((
-                (f"{print_name(item[0])} таб. {item[0]}"),
-                (f"{profession_name},{print_cvalification(item[0])} разряд,"),
-                (f"{print_reason(item[1])}"),
-                (f"{print_period(item[2],item[3])}"),
-                (f"{print_name(str(item[4]))}, таб {item[4]}"),
-                (f"{profession_name},{print_cvalification(str(item[4]))} разряд"),
-                (f"{tarif[str(profession_code)][print_cvalification(item[0])]} ")
+
+        for personal_number in tabels:
+            substitutes_list = eval(substitutes["DEFAULT"][f"{profession_code},{personal_number}"])
+
+            for item in substitutes_list:
+                list_for_write_xls.append((
+                    (f"{print_name(item[0])} таб. {item[0]}"),
+                    (f"{profession_name},{print_cvalification(item[0])} разряд,"),
+                    (f"{print_reason(item[1])}"),
+                    (f"{print_period(item[2],item[3])}"),
+                    (f"{print_name(str(item[4]))}, таб {item[4]}"),
+                    (f"{profession_name},{print_cvalification(str(item[4]))} разряд"),
+                    (f"{tarif[str(profession_code)][print_cvalification(item[0])]} ")
                                     ))
-        for item in list_for_write_xls:
-            if item == []:
-                list_for_write_xls.pop(item)
+
         return list_for_write_xls
 
     return create_list_for_write_xls()
-
-def test():
-    for personal_number in tabels:
-        pass
 
 def set_style():
     pass
@@ -139,8 +131,7 @@ def write_to_file_string(row,col,data):
 
 
 if __name__ == "__main__":
-    for tabel in tabels:
-        print(load_data_and_create_list(tabel))
+    print(load_data_and_create_list("87100"))
 
 
 
