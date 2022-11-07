@@ -1,24 +1,17 @@
 import json
 import xlwt
 import configparser
+import math
 
 from create_form import create_file
-
-
-workbook =xlwt.Workbook()
-# Получать рабочий лист
-worksheet = workbook.add_sheet('form')
-
-create_file(worksheet=worksheet,count=40)
-value_test =f'ТЕСТ'
-worksheet.write(13, 2, value_test)
-workbook.save("test.xls")
+from create_form import set_style
 
 # входные данные
 profession_code = 87100
 month = "03"
 year = "22"
 tarif = {"87100":{6:9798,5:8910,4:8105,3:7365},"87200":{6:9798,5:8910,4:8105,3:7365},"08300":{6:9798,5:8910,4:8105,3:7365}}
+procent = {"87100":{"30"},"87200":{"30"},"08300":{"70"}}
 
 with open("data\\all_data2.json", "r", encoding="utf-8") as file:
         all_data = json.load(file)
@@ -112,7 +105,7 @@ def load_data_and_create_list(profession_code="87100"):
             for item in substitutes_list:
                 list_for_write_xls.append((
                     (f"{print_name(item[0])} таб. {item[0]}"),
-                    (f"{profession_name},{print_cvalification(item[0])} разряд,"),
+                    (f"{profession_name},{print_cvalification(item[0])} разряд"),
                     (f"{print_reason(item[1])}"),
                     (f"{print_period(item[2],item[3])}"),
                     (f"{print_name(str(item[4]))}, таб {item[4]}"),
@@ -124,14 +117,80 @@ def load_data_and_create_list(profession_code="87100"):
 
     return create_list_for_write_xls()
 
-def set_style():
-    pass
-def write_to_file_string(row,col,data):
-    pass
+
+def write_to_file_string(profession_code = "87100" ):
+    workbook =xlwt.Workbook()
+    # Получать рабочий лист
+    worksheet = workbook.add_sheet('form')
+    # считаем количество строк которые требуется создать
+    number_of_rows = len(load_data_and_create_list(profession_code))
+    # считаем количество строк которые нужно создать в документе
+    # количество строк в замещении делим на 15(количество позиций возможные в документе)
+    # округляем до большего
+    count = math.ceil(number_of_rows/15)*40
+    create_file(worksheet=worksheet,count=count)
+    
+    # передаем информацию для записи
+    list_for_write = load_data_and_create_list()
+    print(list_for_write[0])
+    
+    def write_row(start_row,start_column,count,value):
+        #sheet.merge(top_row, bottom_row, left_column, right_column)
+
+        # записываем порядковый номер:
+        worksheet.merge(start_row,start_row+1,start_column,start_column, set_style(borders_type=2))
+        worksheet.write(start_row, start_column,str(count), set_style(ahorz=0x02,borders_type=2))
+
+        # записываем фамилию имя замещаемого:
+        worksheet.merge(start_row,start_row,start_column+1,start_column+2, set_style())
+        worksheet.write(start_row, start_column+1,value[0], set_style(ahorz=0x02))
+
+        # записываем профессию и разряд
+        worksheet.merge(start_row+1,start_row+1,start_column+1,start_column+2, set_style())
+        worksheet.write(start_row+1, start_column+1,value[1], set_style(ahorz=0x02))
+
+        # записываем причину отсутствия
+        worksheet.merge(start_row,start_row,start_column+3,start_column+4, set_style())
+        worksheet.write(start_row, start_column+3,value[2], set_style(ahorz=0x02))
+
+        # записываем период отсутствия
+        worksheet.merge(start_row+1,start_row+1,start_column+3,start_column+4, set_style())
+        worksheet.write(start_row+1, start_column+3,value[3], set_style(ahorz=0x02))
+
+        # записываем тариф
+        worksheet.merge(start_row,start_row+1,start_column+5,start_column+5, set_style())
+        worksheet.write(start_row, start_column+5,value[-1], set_style(ahorz=0x02))
+
+        # записываем фамилию замещающего
+        worksheet.merge(start_row,start_row,start_column+6,start_column+8, set_style())
+        worksheet.write(start_row, start_column+6,value[4], set_style(ahorz=0x02))
+
+        # записываем профессию и разряд
+        worksheet.merge(start_row+1,start_row+1,start_column+6,start_column+8, set_style())
+        worksheet.write(start_row+1, start_column+6,value[5], set_style(ahorz=0x02))
+
+
+
+
+
+
+
+
+
+
+
+
+    value = list_for_write[0]
+    write_row(13,1,1,value)
+    
+
+    workbook.save("test.xls")
 
 
 if __name__ == "__main__":
-    print(load_data_and_create_list("87100"))
+    # print(load_data_and_create_list("87100"))
+    write_to_file_string("87100")
+
 
 
 
