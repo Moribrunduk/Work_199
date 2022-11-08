@@ -1,7 +1,5 @@
 
-
 import sys
-
 from PyQt5.QtCore import *
 from PyQt5.QtCore import QSettings
 from PyQt5.QtGui import *
@@ -10,20 +8,6 @@ import json
 from PyQt5 import QtGui
 from collections import Counter
 
-save_input_user_for_load_in_file = {}
-# {(строка,ячейка):(табельный,(R,G,B цвет))
-save_input_user_for_summ_in_file = {}
-# {(табельный, дата):(табельный замещающего)}
-
-
-with open("data\\all_data2.json", "r", encoding="utf-8") as file:
-        all_data = json.load(file)
-
-# разработано для работы по одному шифру
-
-tabels = all_data["шифр"]["87100"]["Табельный"]
-
-
 class MainWidget(QWidget):
     settings = QSettings("temp.ini", QSettings.IniFormat)
     def __init__(self):
@@ -31,11 +15,23 @@ class MainWidget(QWidget):
         self.setWindowTitle("Расчет 199 премии")
         self.top_layout = QVBoxLayout()
         self.setLayout(self.top_layout)
-        self.resize(500, 300)
-
+        self.resize(500, 500)
         self.data_table_view = QTableView()
         self.model = QStandardItemModel(self)
-        
+
+        # self.save_input_user_for_load_in_file = {}
+        # self.save_input_user_for_summ_in_file = {}
+        with open("data\\all_data2.json", "r", encoding="utf-8") as file:
+            self.all_data = json.load(file)
+        self.tabels = self.all_data["шифр"]["87100"]["Табельный"]
+
+
+        self.add_data()
+        self.add_replace_cell()
+        self.load_data()
+        self.parameters()
+        self.summ_pay()
+
     def add_data(self):
 
         #ДОБАВЯЕМ РАБОЧИЙ КАЛЕНДАРЬ
@@ -65,7 +61,7 @@ class MainWidget(QWidget):
         x=1+1
         work_column =0
         #задаем начальный столбец
-        for tabel in tabels:
+        for tabel in self.tabels:
             #создаем итем
             item = QStandardItem(tabel)
             #делаем его нередактируемым
@@ -79,16 +75,16 @@ class MainWidget(QWidget):
         
         # ДОБАВЛЯЕМ ФАМИЛИИ
         x = 1+1
-        for tabel in tabels:
-            item = QStandardItem(tabels[tabel]["фамилия"])
+        for tabel in self.tabels:
+            item = QStandardItem(self.tabels[tabel]["фамилия"])
             item.setEditable(False)
             self.model.setItem(x, work_column, item)
             x=x+2
 
         # ДОБАВЛЯЕМ ИНИЦИАЛЫ
         x = 2+1
-        for tabel in tabels:
-            item = QStandardItem(tabels[tabel]["инициалы"])
+        for tabel in self.tabels:
+            item = QStandardItem(self.tabels[tabel]["инициалы"])
             item.setEditable(False)
             self.model.setItem(x, work_column, item)
             x=x+2
@@ -98,8 +94,8 @@ class MainWidget(QWidget):
         # ДОБАВЛЯЕМ РАЗРЯДЫ
 
         x = 1+1
-        for tabel in tabels:
-            item = QStandardItem(str(tabels[tabel]["разряд"]))
+        for tabel in self.tabels:
+            item = QStandardItem(str(self.tabels[tabel]["разряд"]))
             item.setEditable(False)
             self.model.setItem(x, work_column, item)
             self.data_table_view.setSpan(x,work_column,2,1)
@@ -110,14 +106,14 @@ class MainWidget(QWidget):
 
         # ДОБАВЛЯЕМ ГРАФИК ОТРАБОТАННЫХ СМЕН
         x = 1+1
-        for tabel in tabels:
-            for day in range(0,len(tabels[tabel]["отработанные смены"])):
+        for tabel in self.tabels:
+            for day in range(0,len(self.tabels[tabel]["отработанные смены"])):
                 if day<16:
-                    item = QStandardItem(str(tabels[tabel]["отработанные смены"][day]))
+                    item = QStandardItem(str(self.tabels[tabel]["отработанные смены"][day]))
                     item.setEditable(False)
                     self.model.setItem(x, day+work_column,item )
                 else:
-                    item = QStandardItem(str(tabels[tabel]["отработанные смены"][day]))
+                    item = QStandardItem(str(self.tabels[tabel]["отработанные смены"][day]))
                     item.setEditable(False)
                     self.model.setItem(x+1, day+work_column-16, item)
             x=x+2
@@ -128,7 +124,7 @@ class MainWidget(QWidget):
         
         x = 1+1
         work_row = x
-        for x in range(work_row,len(tabels)*2+work_row):
+        for x in range(work_row,len(self.tabels)*2+work_row):
             for y in range(0,16):
                 item = QStandardItem(None)
                 # делаем их все нередактируемые и заполняем цветом
@@ -145,11 +141,11 @@ class MainWidget(QWidget):
         # НАЧАЛЬНАЯ СТРОКА # TODO сделать чтобы она изменялась по всему документу
         x = 1+1
         # пробегаемся по табельным
-        for tabel in tabels:
+        for tabel in self.tabels:
             # Итерируем рабочий календарь по количеству дней
-            for day in range(1,len(all_data["шифр"]["87100"]["Рабочий календарь"])):
+            for day in range(1,len(self.all_data["шифр"]["87100"]["Рабочий календарь"])):
                 # Проверяем есть ли в день у указанного табельного замещающие(если есть, значит отмечаем в таблице этот день)
-                if tabels[tabel]["Замещающие"].get(str(day)) !=None:
+                if self.tabels[tabel]["Замещающие"].get(str(day)) !=None:
                     # если дни <16 это первая строка
                     if day<16:
                         item = QStandardItem("")
@@ -189,7 +185,7 @@ class MainWidget(QWidget):
                 tabel = self.model.index(row-1,0).data()
                 date = self.model.index(1,column-16).data()
                 user_input = self.data_table_view.currentIndex().data()
-                if user_input in tabels[tabel]["Замещающие"][date]:
+                if user_input in self.tabels[tabel]["Замещающие"][date]:
                     self.model.item(row, column).setBackground(QtGui.QColor(0,128,0))
 
                     save_input_user_for_load_in_file[row,column] = user_input, (0,128,0)
@@ -211,7 +207,7 @@ class MainWidget(QWidget):
 
                     
 
-                elif user_input not in tabels[tabel]["Замещающие"][date]:
+                elif user_input not in self.tabels[tabel]["Замещающие"][date]:
                     self.model.item(row, column).setBackground(QtGui.QColor(255,0,0))
                     save_input_user_for_load_in_file[row,column] = user_input, (255,0,0)
 
@@ -226,7 +222,7 @@ class MainWidget(QWidget):
                 tabel = self.model.index(row,0).data()
                 date = self.model.index(0,column-16).data()
                 user_input = self.data_table_view.currentIndex().data()
-                if user_input in tabels[tabel]["Замещающие"][date]:
+                if user_input in self.tabels[tabel]["Замещающие"][date]:
                     self.model.item(row, column).setBackground(QtGui.QColor(0,128,0))
                     save_input_user_for_load_in_file[row,column] = user_input, (0,128,0)
                     save_input_user_for_summ_in_file[self.model.index(row,0).data(),
@@ -244,7 +240,7 @@ class MainWidget(QWidget):
                     except:
                         pass
 
-                elif user_input not in tabels[tabel]["Замещающие"][date]:
+                elif user_input not in self.tabels[tabel]["Замещающие"][date]:
                     self.model.item(row, column).setBackground(QtGui.QColor(255,0,0))
                     save_input_user_for_load_in_file[row,column] = user_input, (255,0,0)
                     save_input_user_for_summ_in_file[self.model.index(row,0).data(),
@@ -298,7 +294,7 @@ class MainWidget(QWidget):
                 return money
             new_dict = {}
             # Пробегаемся по всем табельным
-            for tabel in  tabels:
+            for tabel in  self.tabels:
                 # создаем для каждого табельного свой список замещающик
                 list_tabel = []
                 # создаем для каждого табельного словарь(замещающий: сумма)
@@ -308,7 +304,7 @@ class MainWidget(QWidget):
                     # Проверяем если табельные совпадают
                     if Key[0] == tabel:
                         # задаем разряд
-                        prof = tabels[tabel]["разряд"]
+                        prof = self.tabels[tabel]["разряд"]
                         # задаем сумму для данного разряда
                         money = summ_tabel(prof)
                         # Добавляем в список табельный
@@ -345,9 +341,8 @@ class MainWidget(QWidget):
         #Показывае данные при изменении в ячейке
         self.model.itemChanged.connect(self.input_user_color_and_save)
         self.model.itemChanged.connect(self.summ_pay)
-        
-
         self.top_layout.addWidget(self.data_table_view)
+    
     
         
         
@@ -355,13 +350,5 @@ class MainWidget(QWidget):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     main = MainWidget()
-    main.add_data()
-    main.add_replace_cell()
-    main.load_data()
-    main.parameters()
-    
-    # main.summ_pay()
-    
     main.show()
-
     sys.exit(app.exec_())

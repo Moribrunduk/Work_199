@@ -66,4 +66,14 @@ if __name__ == '__main__':
 
     sys.exit(app.exec_())
 
+def show_info_geometry():
+
+    import sys
+from PyQt5 import QtGui
+from PyQt5.QtCore import QSettings, QBackgroundColorRole
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget,
+                             QVBoxLayout, QTableWidget, QTableWidgetItem, 
+                             QHeaderView, QPushButton)
+print(self.geometry())
+QShortcut(QKeySequence("Ctrl+1"),self).activated.connect(show_info_geometry)
 
