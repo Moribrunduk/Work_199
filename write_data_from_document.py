@@ -2,9 +2,12 @@ import json
 import xlwt
 import configparser
 import math
-
+import os
+from xlutils.copy import copy
+from xlrd import open_workbook
 from create_form import create_file
 from create_form import set_style
+
 
 # входные данные
 profession_code = 87100
@@ -202,17 +205,12 @@ def write_to_file_string(profession_code = "87100" ):
                 write_row(start_row+row_count,start_column,count+1,value)
                 row_count+=2
             
-
+        workbook.save(f'data\\199_{month}_{year}.xls')
     write_file()
     
-    
-
-    workbook.save("test.xls")
-
-
 if __name__ == "__main__":
-    # print(load_data_and_create_list("87100"))
     write_to_file_string("87100")
+    
 
 
 
