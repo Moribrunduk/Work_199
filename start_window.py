@@ -1,9 +1,10 @@
-from PyQt5.QtWidgets import QWidget, QApplication,QLabel,QGridLayout,QPushButton,QVBoxLayout,QLineEdit
-from PyQt5.QtGui import QPainter, QColor, QPixmap
-from PyQt5.QtCore import Qt, QTimer 
-from PyQt5 import QtGui
 import sys
-import Content
+from PyQt5.QtWidgets import QWidget, QApplication,QLabel,QGridLayout,QPushButton,QVBoxLayout,QLineEdit,QHBoxLayout
+from PyQt5.QtGui import  QPixmap
+from PyQt5.QtCore import Qt, QTimer 
+sys.path.insert(1,"Bin")
+from Bin.Content import MAIN_WINDOW
+
 
 class Start_picture(QWidget):
     def __init__(self):
@@ -69,7 +70,7 @@ class Avtorisation_widow(QWidget):
     def exit_prog(self):
         sys.exit()
     def start(self):
-        self.CHP = Change_profession()
+        self.cont = MAIN_WINDOW()
         self.close()
 
 class Change_profession(QWidget):
@@ -79,30 +80,38 @@ class Change_profession(QWidget):
         
     def initUI(self):
 
-        self.setWindowTitle("Выбор таблицы")
-        self.layout = QVBoxLayout()
-        self.buttonDRGG = QPushButton("Дефектоскопист РГГ\n (87100)")
+        self.setWindowTitle("Выбор задачи")
+        self.main_layout = QVBoxLayout()
+        self.DRGG_layout = QHBoxLayout()
+        self.buttonDRGG = QPushButton("Распределение премии \n (шифр  №199)")
+        self.buttonDRGG.setEnabled()
         self.buttonDRGG.clicked.connect(self.start)
         self.buttonDRGG.setFixedSize(250,80)
+
+
         self.layout.addWidget(self.buttonDRGG)
         
-        self.buttonDPZRS = QPushButton("Дефектоскопист ПЗРС\n (87200)")
-        self.buttonDPZRS.clicked.connect(self.start)
-        self.buttonDPZRS.setFixedSize(250,80)
-        self.layout.addWidget(self.buttonDPZRS)
+        # self.buttonDPZRS = QPushButton("Дефектоскопист ПЗРС\n (87200)")
+        # self.buttonDPZRS.clicked.connect(self.start_DPZRS_window)
+        # self.buttonDPZRS.setFixedSize(250,80)
+        # self.layout.addWidget(self.buttonDPZRS)
         
-        self.buttonFOTO = QPushButton("Фотолаборанты\n (08300)")
-        self.buttonFOTO.clicked.connect((self.start))
-        self.buttonFOTO.setFixedSize(250,80)
-        self.layout.addWidget(self.buttonFOTO)
+        # self.buttonFOTO = QPushButton("Фотолаборанты\n (08300)")
+        # self.buttonFOTO.clicked.connect((self.start_FOTO_window))
+        # self.buttonFOTO.setFixedSize(250,80)
+        # self.layout.addWidget(self.buttonFOTO)
 
-        self.setFixedSize(270,300)
+        self.setFixedSize(270,100)
         self.setLayout(self.layout)
         self.show()
     
     def start(self):
-        self.conne = Content.MyWindow()
+        self.cont = MAIN_WINDOW()
         self.close()
+    # def start_DPZRS_window(self):
+    #     pass
+    # def start_FOTO_window(self):
+    #     pass
 
 
 

@@ -1,31 +1,30 @@
 
 import sys
-from PyQt5.QtCore import *
 from PyQt5.QtCore import QSettings
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
+from PyQt5.QtGui import QStandardItemModel,QStandardItem,QColor
+from PyQt5.QtWidgets import QWidget,QVBoxLayout,QTableView,QApplication
 import json
-from PyQt5 import QtGui
+import configparser
 from collections import Counter
 
-class MainWidget(QWidget):
+class MAIN_WORK_TABLE(QWidget): 
     settings = QSettings("temp.ini", QSettings.IniFormat)
-    def __init__(self):
-        super(MainWidget, self).__init__()
+    def __init__(self,proffession_number):
+        self.proffession_number = proffession_number
+        super(MAIN_WORK_TABLE, self).__init__()
+        self.initUI()
+    def initUI(self):
         self.setWindowTitle("Расчет 199 премии")
         self.top_layout = QVBoxLayout()
         self.setLayout(self.top_layout)
         self.resize(500, 500)
         self.data_table_view = QTableView()
         self.model = QStandardItemModel(self)
-
         # self.save_input_user_for_load_in_file = {}
         # self.save_input_user_for_summ_in_file = {}
         with open("data\\all_data2.json", "r", encoding="utf-8") as file:
             self.all_data = json.load(file)
-        self.tabels = self.all_data["шифр"]["87100"]["Табельный"]
-
-
+        self.tabels = self.all_data["шифр"][self.proffession_number]["Табельный"]
         self.add_data()
         self.add_replace_cell()
         self.load_data()
@@ -129,7 +128,7 @@ class MainWidget(QWidget):
                 item = QStandardItem(None)
                 # делаем их все нередактируемые и заполняем цветом
                 item.setEditable(False)
-                item.setBackground(QtGui.QColor(192,192,192))
+                item.setBackground(QColor(192,192,192))
                 self.model.setItem(x, y+work_column, item)
         
 
@@ -143,18 +142,18 @@ class MainWidget(QWidget):
         # пробегаемся по табельным
         for tabel in self.tabels:
             # Итерируем рабочий календарь по количеству дней
-            for day in range(1,len(self.all_data["шифр"]["87100"]["Рабочий календарь"])):
+            for day in range(1,len(self.all_data["шифр"][self.proffession_number]["Рабочий календарь"])):
                 # Проверяем есть ли в день у указанного табельного замещающие(если есть, значит отмечаем в таблице этот день)
                 if self.tabels[tabel]["Замещающие"].get(str(day)) !=None:
                     # если дни <16 это первая строка
                     if day<16:
                         item = QStandardItem("")
-                        item.setBackground(QtGui.QColor(0,128,128))
+                        item.setBackground(QColor(0,128,128))
                         self.model.setItem(x, day+work_column-1,item)
                     # если дни=>16 вторая строка
                     else:
                         item = QStandardItem("")
-                        item.setBackground(QtGui.QColor(0,128,128))
+                        item.setBackground(QColor(0,128,128))
                         self.model.setItem(x+1, day+work_column-16,item)
             x=x+2
 
@@ -186,7 +185,7 @@ class MainWidget(QWidget):
                 date = self.model.index(1,column-16).data()
                 user_input = self.data_table_view.currentIndex().data()
                 if user_input in self.tabels[tabel]["Замещающие"][date]:
-                    self.model.item(row, column).setBackground(QtGui.QColor(0,128,0))
+                    self.model.item(row, column).setBackground(QColor(0,128,0))
 
                     save_input_user_for_load_in_file[row,column] = user_input, (0,128,0)
 
@@ -195,7 +194,7 @@ class MainWidget(QWidget):
                                                     ] =  user_input
 
                 elif user_input =="":
-                    self.model.item(row, column).setBackground(QtGui.QColor(0,128,128))
+                    self.model.item(row, column).setBackground(QColor(0,128,128))
                     try:
 
                         del save_input_user_for_load_in_file[row,column] 
@@ -208,7 +207,7 @@ class MainWidget(QWidget):
                     
 
                 elif user_input not in self.tabels[tabel]["Замещающие"][date]:
-                    self.model.item(row, column).setBackground(QtGui.QColor(255,0,0))
+                    self.model.item(row, column).setBackground(QColor(255,0,0))
                     save_input_user_for_load_in_file[row,column] = user_input, (255,0,0)
 
                     save_input_user_for_summ_in_file[self.model.index(row-1,0).data(),
@@ -223,14 +222,14 @@ class MainWidget(QWidget):
                 date = self.model.index(0,column-16).data()
                 user_input = self.data_table_view.currentIndex().data()
                 if user_input in self.tabels[tabel]["Замещающие"][date]:
-                    self.model.item(row, column).setBackground(QtGui.QColor(0,128,0))
+                    self.model.item(row, column).setBackground(QColor(0,128,0))
                     save_input_user_for_load_in_file[row,column] = user_input, (0,128,0)
                     save_input_user_for_summ_in_file[self.model.index(row,0).data(),
                                                     self.model.index(0,column-16).data()
                                                     ] = user_input
 
                 elif user_input =="":
-                    self.model.item(row, column).setBackground(QtGui.QColor(0,128,128))
+                    self.model.item(row, column).setBackground(QColor(0,128,128))
                     try:
 
                         del save_input_user_for_load_in_file[row,column] 
@@ -241,7 +240,7 @@ class MainWidget(QWidget):
                         pass
 
                 elif user_input not in self.tabels[tabel]["Замещающие"][date]:
-                    self.model.item(row, column).setBackground(QtGui.QColor(255,0,0))
+                    self.model.item(row, column).setBackground(QColor(255,0,0))
                     save_input_user_for_load_in_file[row,column] = user_input, (255,0,0)
                     save_input_user_for_summ_in_file[self.model.index(row,0).data(),
                                                     self.model.index(0,column-16).data()
@@ -269,29 +268,32 @@ class MainWidget(QWidget):
                 row = Key[0]
                 column = Key[1]
                 item = QStandardItem(Value[0])
-                item.setBackground(QtGui.QColor(Value[1][0],Value[1][1],Value[1][2]))
+                item.setBackground(QColor(Value[1][0],Value[1][1],Value[1][2]))
                 self.model.setItem(row, column,item)
         except:
             print(f'[INFO] -в блоке load_data {Exception}')
 
     def summ_pay(self):
+        # загружаем данные из файла с настройками
+        SumSettings = configparser.ConfigParser()
+        SumSettings.read("data\SETTINGS.ini", encoding="utf-8")
         payment_list = []
         list_tabel = []
+        day = 21
+        cofficient = 0.24
         try:
             data_dict = self.settings.value('for_summ')
             data_dict = eval(data_dict)
             def summ_tabel(prof):
                 if prof == 3:
-                    money = 300
+                    money = (int(SumSettings[self.proffession_number]["cv_three_tarif"])*int(SumSettings[self.proffession_number]["procent_text"])*0.01/day) + (int(SumSettings[self.proffession_number]["cv_three_tarif"])*int(SumSettings[self.proffession_number]["procent_text"])*0.01/day*cofficient)  
                 elif prof == 4:
-                    money = 400
+                    money = (int(SumSettings[self.proffession_number]["cv_four_tarif"])*int(SumSettings[self.proffession_number]["procent_text"])*0.01/day) + (int(SumSettings[self.proffession_number]["cv_four_tarif"])*int(SumSettings[self.proffession_number]["procent_text"])*0.01/day*cofficient)
                 elif prof == 5:
-                    money = 500
+                    money = (int(SumSettings[self.proffession_number]["cv_five_tarif"])*int(SumSettings[self.proffession_number]["procent_text"])*0.01/day) + (int(SumSettings[self.proffession_number]["cv_five_tarif"])*int(SumSettings[self.proffession_number]["procent_text"])*0.01/day*cofficient)
                 elif prof == 6:
-                    money = 600
-                elif prof == 7:
-                    money = 0
-                return money
+                    money = (int(SumSettings[self.proffession_number]["cv_six_tarif"])*int(SumSettings[self.proffession_number]["procent_text"])*0.01/day) + (int(SumSettings[self.proffession_number]["cv_six_tarif"])*int(SumSettings[self.proffession_number]["procent_text"])*0.01/day*cofficient)
+                return float('{:.2f}'.format(money))
             new_dict = {}
             # Пробегаемся по всем табельным
             for tabel in  self.tabels:
@@ -313,7 +315,7 @@ class MainWidget(QWidget):
                         c = Counter(list_tabel)
                         new_dict ={}
                         for key,value in dict(c).items():
-                            new_dict[Key[0],key] =int(value)*int(money)
+                            new_dict[Key[0],key] =int(value)*money
                         # print(new_dict)
                 if new_dict == {}:
                     continue
@@ -349,6 +351,6 @@ class MainWidget(QWidget):
     
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    main = MainWidget()
+    main = MAIN_WORK_TABLE("87100")
     main.show()
     sys.exit(app.exec_())
