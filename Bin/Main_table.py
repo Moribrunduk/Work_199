@@ -2,10 +2,12 @@
 import sys
 from PyQt5.QtCore import QSettings
 from PyQt5.QtGui import QStandardItemModel,QStandardItem,QColor
-from PyQt5.QtWidgets import QWidget,QVBoxLayout,QTableView,QApplication
+from PyQt5.QtWidgets import QWidget,QHBoxLayout,QTableView,QApplication,QPushButton,QGridLayout,QMainWindow,QVBoxLayout
 import json
 import configparser
 from collections import Counter
+
+from Create_final_excell_file import CREATE_EXCELL
 
 class MAIN_WORK_TABLE(QWidget): 
     settings = QSettings("temp.ini", QSettings.IniFormat)
@@ -13,23 +15,51 @@ class MAIN_WORK_TABLE(QWidget):
         self.proffession_number = proffession_number
         super(MAIN_WORK_TABLE, self).__init__()
         self.initUI()
+        
     def initUI(self):
         self.setWindowTitle("Расчет 199 премии")
-        self.top_layout = QVBoxLayout()
-        self.setLayout(self.top_layout)
-        self.resize(500, 500)
+        self.resize(500,300)
+        self.model = QStandardItemModel(60,20)
         self.data_table_view = QTableView()
-        self.model = QStandardItemModel(self)
-        # self.save_input_user_for_load_in_file = {}
-        # self.save_input_user_for_summ_in_file = {}
-        with open("data\\all_data2.json", "r", encoding="utf-8") as file:
-            self.all_data = json.load(file)
+        self.data_table_view.setModel(self.model)
+
+        self.top_layout = QGridLayout()
+        self.main_layout = QVBoxLayout()
+        self.Button_layout = QVBoxLayout()
+
+        self.button = QPushButton("Создать файл для печати")
+        
+        
+        self.button.clicked.connect(self.ButtonAction)
+        
+        
+        
+        self.top_layout.addWidget(self.data_table_view,0,0)
+        self.Button_layout.addWidget(self.button)
+
+        self.main_layout.addLayout(self.top_layout)
+        self.main_layout.addLayout(self.Button_layout)
+        self.setLayout(self.main_layout)
+
+        
+        self.save_input_user_for_load_in_file = {}
+        self.save_input_user_for_summ_in_file = {}
+        
+        settings = configparser.ConfigParser()
+        settings.read("data/SETTINGS.ini", encoding="utf-8")
+        current_path = settings["Settings"][f"current_directory_{self.proffession_number}"]
+        with open(f"{current_path}", "r", encoding="utf-8") as file:
+             self.all_data = json.load(file)
         self.tabels = self.all_data["шифр"][self.proffession_number]["Табельный"]
         self.add_data()
         self.add_replace_cell()
         self.load_data()
         self.parameters()
         self.summ_pay()
+    
+    def ButtonAction(self):
+        self.CE = CREATE_EXCELL(self.proffession_number)
+        self.CE.Main()
 
     def add_data(self):
 

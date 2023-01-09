@@ -1,4 +1,5 @@
 import sys
+import os
 sys.path.insert(1,"Bin\Settings_form_window")
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QMainWindow,QTabWidget,QWidget,QVBoxLayout,QGridLayout
@@ -6,6 +7,7 @@ from PyQt5.QtCore import Qt
 
 from Main_table import MAIN_WORK_TABLE
 from Settings_form_window.Main_settings_window import Settings_window
+from Create_json_file import CREATE_JSON_DATA
 from Load_file_form import Change_profession
 import configparser
 
@@ -34,11 +36,18 @@ class MAIN_WINDOW(QMainWindow):
         if settings["Settings"]["path_87100"] == "":
             TableDRGG = Change_profession("87100")
             TableDRGG.OK_button.clicked.connect(self.load_tab_drgg)
+            # CJD = CREATE_JSON_DATA("87100")
+            # TableDRGG.OK_button.clicked.connect(self.CJD.main())
             self.tabWidget.insertTab(1,TableDRGG, f"Дефектоскописты РГГ(87100)")
             
         else:
-            TableDRGG = MAIN_WORK_TABLE("87100")
-            self.tabWidget.insertTab(1,TableDRGG, f"Дефектоскописты РГГ(87100)")
+            if not os.path.isfile(f'settings["Settings"]["path_87100"]'):
+                TableDRGG = Change_profession("87100")
+                TableDRGG.OK_button.clicked.connect(self.load_tab_drgg)
+                self.tabWidget.insertTab(1,TableDRGG, f"Дефектоскописты РГГ(87100)")
+            else:
+                TableDRGG = MAIN_WORK_TABLE("87100")
+                self.tabWidget.insertTab(1,TableDRGG, f"Дефектоскописты РГГ(87100)")
         
     
     def load_tab_drgg(self):

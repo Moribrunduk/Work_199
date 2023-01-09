@@ -1,8 +1,11 @@
 import sys
+sys.path.insert(1,"Bin")
 from PyQt5.QtWidgets import QWidget, QApplication,QPushButton,QHBoxLayout,QFileDialog,QVBoxLayout,QLabel,QFrame
 from PyQt5.QtCore import Qt
 import configparser
 import xlrd
+
+from Create_json_file import CREATE_JSON_DATA
 
 class Change_profession(QWidget):
     def __init__(self,profession_number):
@@ -48,7 +51,7 @@ class Change_profession(QWidget):
                              "Выбрать файл",
                              ".",
                              "Text Files(*.xls)")
-        # settings["Settings"][f'Path_{self.profession_number}'] = filepath
+        settings["Settings"][f'Path_{self.profession_number}'] = filepath
 
         work_book = xlrd.open_workbook(filepath)
         work_sheet = work_book.sheet_by_name("Табель")
@@ -59,6 +62,10 @@ class Change_profession(QWidget):
         with open("data\SETTINGS.ini", "w", encoding="utf-8") as configfile:
             settings.write(configfile)
         self.file_label.setText(f"{data_month} {data_year}")
+
+        self.CREATE_JSON_FILE = CREATE_JSON_DATA(int(self.profession_number))
+        self.CREATE_JSON_FILE.main()
+
         
         
     

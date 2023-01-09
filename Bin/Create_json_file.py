@@ -7,46 +7,12 @@ import configparser
 
 class CREATE_JSON_DATA():
     def __init__(self,profession_number):
-        # super(CREATE_JSON_DATA,self).__init__()
-        self.profession_number = profession_number
+        self.profession_number = int(profession_number)
     def main(self):
-        self.create_file()
-        self.get_data_personal_87100()
- 
-    def create_file_SETTINGS(self):
-        
-        settings = configparser.ConfigParser()
-        settings["Settings"] = {}
-        settings["Settings"]["Path_87100"] = ""
-        settings["Settings"]["Path_87200"] = ""
-        settings["Settings"]["Path_08300"] = ""
-        settings["87100"] = {"cv_three_tarif":1,
-                                "cv_four_tarif":0,
-                                "cv_five_tarif":0,
-                                "cv_six_tarif":0,
-                                "procent_text":0}
-        settings["87200"] = {"cv_three_tarif":0,
-                                "cv_four_tarif":0,
-                                "cv_five_tarif":0,
-                                "cv_six_tarif":0,
-                                "procent_text":0}
-        settings["08300"] = {"cv_three_tarif":0,
-                                "cv_four_tarif":0,
-                                "cv_five_tarif":0,
-                                "cv_six_tarif":0,
-                                "procent_text":0}
-        settings["Days"] = {}                        
-        settings["Days"]["days_keys"]=str(['"ИО" - ', '"О" - ', '"Э" - ', '"Р" - ', '"А" - ', '"Ж" - ', '"Д" - ', '"М" - ', '"Б" - ', '"К" - '])
-        settings["Days"]["days_values"]=str(['И.о.мастера', 'Отпуск очередной', 'Отпуск учебный', 'Отпуск по беремености', 'Отпуск за свой счет', 'Пенсионный день/уход за детьми', 'Донорский день', 'Медкомиссия', 'Больничный', 'Командировка'])
-    
-        with open("data\SETTINGS.ini", "w", encoding="utf-8") as configfile:
-            settings.write(configfile)
+        self.get_data_personal()
+        self.day_for_personal()
 
-    def create_file(self):
-        if os.path.isfile("data/SETTINGS.ini") == False:
-            self.create_file_SETTINGS()
-
-    def get_data_personal_87100(self):
+    def get_data_personal(self):
 
         # загружаем рабочий файл 
         settings = configparser.ConfigParser()
@@ -70,16 +36,18 @@ class CREATE_JSON_DATA():
             x = work_sheet.cell(row,4).value
             if x == self.profession_number:
                 start_row = row-2
+                print(start_row)
                 break
         
         # ищем последнюю ячейку для данного шифра профессии
-        for row in range(start_row,work_sheet.nrows):
-            x = work_sheet.cell(row,4).value
-            if x != self.profession_number:
-                final_row = row
-                break
-
-        
+        for row in range(start_row,work_sheet.nrows,2):
+            x = str(work_sheet.cell(row,4).value)
+            x = x.partition(".")[0]
+            
+            if str(x) == str(self.profession_number):
+                final_row = row+2
+            final_row
+           
         # создаем календарь рабочего времени(для програмного расчета, начало с 0 последнее число 32)
         base_calendar = []
         for row in range(9,10+1):
@@ -106,7 +74,7 @@ class CREATE_JSON_DATA():
         
         all_data["шифр"][self.profession_number]["Рабочий календарь"]=work_time_calendar
 
-        # заполняем нашу базу данных из файла, по каждому табельному
+        # # заполняем нашу базу данных из файла, по каждому табельному
         all_data["шифр"][self.profession_number]["Табельный"]={}
 
         #ГЛАВНЫЙ СКРИПТ
@@ -181,15 +149,66 @@ class CREATE_JSON_DATA():
                     "Пропущенные смены": missed_day,
                     "Причина пропуска смен": missed_day_dict
                 }
-        #создание папки
-        data_year = work_sheet.cell(1,0).value
-        print(data_year)
-        data_month = work_sheet.cell(1,2).value
-        print(data_month)
-        if not os.path.isdir("data"):
-            os.mkdir("data")
-        with open(f"data/{self.profession_number}_{data_month}_{data_year}.json", "w", encoding="utf-8") as file:
+        self.data_year = work_sheet.cell(1,0).value.replace(" ","")
+        
+        self.data_month = work_sheet.cell(1,2).value
+       
+        self.file_path = (f"{self.data_year}\\{self.data_month}")
+        if not os.path.exists(self.file_path):
+            os.makedirs(self.file_path)
+        with open(f"{self.file_path}/{self.profession_number}_{self.data_month}_{self.data_year}.json", "w", encoding="utf-8") as file:
                 json.dump(all_data,file, ensure_ascii=False, indent=4)
+        
+    def day_for_personal(self):
+        
+        with open(f"{self.file_path}/{self.profession_number}_{self.data_month}_{self.data_year}.json", "r", encoding="utf-8") as file:
+            all_data = json.load(file)
+
+        # Обьединяем со вторым файлом 
+        for personal_number in all_data["шифр"]["87100"]["Табельный"]:
+
+        # каждому табельному создаем словарь
+            personal_number_for_him_dict = {}
+
+            # пробегаемся у этого табельного по пропущенным сменам
+            for data in all_data["шифр"]["87100"]["Табельный"][personal_number]["Пропущенные смены"]:
+                #Проверяем если в причине пропущеной смены цифра(значит, человек брал часы), пропускаем этот день
+                if all_data["шифр"]["87100"]["Табельный"][personal_number]["Причина пропуска смен"][str(data)] in range(0,8):
+                    continue
+
+                # проверяем совпадает ли день на замещение с выходным, пропускаем этот день
+
+
+                if all_data["шифр"]["87100"]["Рабочий календарь"][str(data)]=="-":
+                    continue
+
+                # создаем список людей которые могут замещать в пропущенную смену
+                personal_number_for_him_in_data = []
+
+                #пробегаем по всем табельным и проверяем кто не отсутствовал в указанную дату
+                for item in all_data["шифр"]["87100"]["Табельный"]:
+                    # исключаем из списка табельный проверяемого
+                    if item == personal_number:
+                        continue
+                    # print(f'{item}---{all_data["шифр"]["87100"]["Табельный"][item]["Пропущенные смены"]}')
+                    if data not in all_data["шифр"]["87100"]["Табельный"][item]["Пропущенные смены"]:
+                        #добавлеям в список табельные которые могут замещать на конкретную дату
+                        personal_number_for_him_in_data.append(item)
+                    
+                    #заполняем словарь по датам
+                    personal_number_for_him_dict[data]=personal_number_for_him_in_data
+            # добавляем словарь каждому табельному
+            all_data["шифр"]["87100"]["Табельный"][personal_number]["Замещающие"]=personal_number_for_him_dict
+
+        #создание папки
+        with open(f"{self.file_path}/{self.profession_number}_{self.data_month}_{self.data_year}.json", "w", encoding="utf-8") as file:
+                json.dump(all_data,file, ensure_ascii=False, indent=4)
+        
+        settings = configparser.ConfigParser()
+        settings.read("data/SETTINGS.ini", encoding="utf-8")
+        settings["Settings"][f"current_directory_{self.profession_number}"] = f"{self.file_path}\\{self.profession_number}_{self.data_month}_{self.data_year}.json"
+        with open("data\SETTINGS.ini", "w", encoding="utf-8") as configfile:
+            settings.write(configfile)
 
 if __name__ == "__main__":
     m = CREATE_JSON_DATA(87100)
