@@ -247,7 +247,7 @@ class CREATE_EXCELL():
                     write_row(start_row+row_count,start_column,count+1,value)
                     row_count+=2
                 
-            workbook.save(f'{self.SETINGS_current_year}\\{self.SETINGS_current_month}\\199_{self.month}_{self.year}.xls')
+            workbook.save(f'{self.SETINGS_current_year}\\{self.SETINGS_current_month}\\{self.profession_code}_199_{self.month}_{self.year}.xls')
         write_file()
     
 if __name__ == "__main__":

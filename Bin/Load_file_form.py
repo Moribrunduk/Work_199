@@ -18,7 +18,7 @@ class Change_profession(QWidget):
         self.setWindowTitle("Выбор Файла")
         self.setFixedSize(450,150)
         self.main_layout = QHBoxLayout()
-        self.main_button = QPushButton(f"Добавьте табель для \n дефектоскопистов РГГ \n ({self.profession_number})")
+        self.main_button = QPushButton(self.ButtonText())
         self.main_button.clicked.connect(self.get_file_directory)
         self.main_button.setStyleSheet("font: 14pt")
         self.main_button.setFixedSize(250,130)
@@ -46,6 +46,19 @@ class Change_profession(QWidget):
         self.main_layout.addLayout(self.right_layout)
 
         self.setLayout(self.main_layout)
+    
+    def ButtonText(self):
+        # текст который будет выводится на кнопке выбора файла в зависимости от професии
+        if self.profession_number == "87100":
+            text = f"Выберите файл для \n дефектоскопистов РГГ \n ({self.profession_number})"
+        elif self.profession_number == "87200":
+            text = f"Выберите файл для \n дефектоскопистов ПЗРС \n ({self.profession_number})"
+        elif self.profession_number == "08300":
+            text = f"Выберите файл для \n фотолаборантов \n ({self.profession_number})"
+        else:
+            text = f"Выберите файл для \n киборгов убийц \n ({self.profession_number})"
+        return text
+
 
     def get_file_directory(self):
         # функция которая записывает в файл путь к последнему выбранному файлу и файлу
@@ -64,7 +77,7 @@ class Change_profession(QWidget):
         self.data_month = work_sheet.cell(1,2).value
         print(self.data_month)
         # файл куда сохраняюся все, что ввел пользователь
-        self.settings["Settings"][f'Path_with_input_{self.profession_number}'] = f"{self.data_year}\\{self.data_month}\\temp.ini"
+        self.settings["Settings"][f'Path_with_input_{self.profession_number}'] = f"{self.data_year}\\{self.data_month}\\data\\{self.profession_number}_input.ini"
 
         with open("data\SETTINGS.ini", "w", encoding="utf-8") as configfile:
             self.settings.write(configfile)
@@ -77,6 +90,6 @@ class Change_profession(QWidget):
     
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    CP = Change_profession(87100)
+    CP = Change_profession("87100")
     CP.showMaximized()
     sys.exit(app.exec_())

@@ -1,6 +1,7 @@
 
 import sys
 import os
+from PyQt5 import QtCore
 from PyQt5.QtCore import QSettings
 from PyQt5.QtGui import QStandardItemModel,QStandardItem,QColor
 from PyQt5.QtWidgets import QWidget,QHBoxLayout,QTableView,QApplication,QPushButton,QGridLayout,QMainWindow,QVBoxLayout
@@ -34,6 +35,8 @@ class MAIN_WORK_TABLE(QWidget):
         self.button.clicked.connect(self.ButtonAction)
         self.button2 = QPushButton("Выбрать другой файл")
         self.button2.clicked.connect(self.ButtonActionChangeFile)
+        self.button2.clicked.connect(self.ChangeFile)
+
 
         self.top_layout.addWidget(self.data_table_view,0,0)
         self.Button_layout.addWidget(self.button)
@@ -64,17 +67,27 @@ class MAIN_WORK_TABLE(QWidget):
         self.CE.Main()
     
     def ButtonActionChangeFile(self):
-        SETTINGS = configparser.ConfigParser()
-        SETTINGS.read("data/SETTINGS.ini", encoding="utf-8")
-        SETTINGS["Settings"][f"path_{self.proffession_number}"] = ""
-        SETTINGS["Settings"][f"current_directory_{self.proffession_number}"] = ""
-        with open("data\SETTINGS.ini", "w", encoding="utf-8") as configfile:
-            SETTINGS.write(configfile)
+        # SETTINGS = configparser.ConfigParser()
+        # SETTINGS.read("data/SETTINGS.ini", encoding="utf-8")
+        # SETTINGS["Settings"][f"path_{self.proffession_number}"] = ""
+        # SETTINGS["Settings"][f"current_directory_{self.proffession_number}"] = ""
+        # with open("data\SETTINGS.ini", "w", encoding="utf-8") as configfile:
+        #     SETTINGS.write(configfile)
 
-        self.close()
+        # self.close()
+        pass
         
-
     
+    def ChangeFile(self):
+        self.CHP = Change_profession(self.proffession_number)
+        self.CHP.show()
+        self.CHP.OK_button.clicked.connect(self.Restart)
+    
+    def Restart(self):
+        QtCore.QCoreApplication.quit()
+        status = QtCore.QProcess.startDetached(sys.executable, sys.argv)
+        print(status)
+        
 
     def add_data(self):
 
@@ -219,7 +232,7 @@ class MAIN_WORK_TABLE(QWidget):
             # извлекаем из JSON год и месяц
             self.year=self.all_data["шифр"][self.proffession_number]["год_месяц"][0]
             self.month = self.all_data["шифр"][self.proffession_number]["год_месяц"][1]
-            self.TEMP = QSettings(f'{self.year}\\{self.month}\\temp.ini', QSettings.IniFormat)
+            self.TEMP = QSettings(f'{self.year}\\{self.month}\\data\\{self.proffession_number}_input.ini', QSettings.IniFormat)
             
             data_dict_from_input_user = self.TEMP.value('input_user')
             data_dict_from_input_user = eval(data_dict_from_input_user)
@@ -321,7 +334,7 @@ class MAIN_WORK_TABLE(QWidget):
             self.year=self.all_data["шифр"][self.proffession_number]["год_месяц"][0]
             self.month = self.all_data["шифр"][self.proffession_number]["год_месяц"][1]
             
-            self.TEMP = QSettings(f'{self.year}\\{self.month}\\temp.ini', QSettings.IniFormat)
+            self.TEMP = QSettings(f'{self.year}\\{self.month}\\data\\{self.proffession_number}_input.ini', QSettings.IniFormat)
             data_dict = self.TEMP.value('input_user')
         
             data_dict = eval(data_dict)
@@ -341,24 +354,29 @@ class MAIN_WORK_TABLE(QWidget):
 
     def summ_pay(self):
         # загружаем данные из файла с настройками
-        SumSettings = configparser.ConfigParser()
-        SumSettings.read("data\SETTINGS.ini", encoding="utf-8")
+        SETTINGS = configparser.ConfigParser()
+        SETTINGS.read("data\SETTINGS.ini", encoding="utf-8")
+        SETTINGS_TEMP_PATH = SETTINGS["Settings"][f"path_with_input_{self.proffession_number}"]
+
+        INPUT_TEMP = configparser.ConfigParser()
+        INPUT_TEMP.read(SETTINGS_TEMP_PATH, encoding="utf-8")
         payment_list = []
         list_tabel = []
         day = 21
         cofficient = 0.24
         try:
-            data_dict = self.settings.value('for_summ')
+            data_dict = INPUT_TEMP["General"]["for_summ"]
+            data_dict = json.loads(data_dict)
             data_dict = eval(data_dict)
             def summ_tabel(prof):
                 if prof == 3:
-                    money = (int(SumSettings[self.proffession_number]["cv_three_tarif"])*int(SumSettings[self.proffession_number]["procent_text"])*0.01/day) + (int(SumSettings[self.proffession_number]["cv_three_tarif"])*int(SumSettings[self.proffession_number]["procent_text"])*0.01/day*cofficient)  
+                    money = (int(SETTINGS[self.proffession_number]["cv_three_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day) + (int(SETTINGS[self.proffession_number]["cv_three_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day*cofficient)  
                 elif prof == 4:
-                    money = (int(SumSettings[self.proffession_number]["cv_four_tarif"])*int(SumSettings[self.proffession_number]["procent_text"])*0.01/day) + (int(SumSettings[self.proffession_number]["cv_four_tarif"])*int(SumSettings[self.proffession_number]["procent_text"])*0.01/day*cofficient)
+                    money = (int(SETTINGS[self.proffession_number]["cv_four_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day) + (int(SETTINGS[self.proffession_number]["cv_four_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day*cofficient)
                 elif prof == 5:
-                    money = (int(SumSettings[self.proffession_number]["cv_five_tarif"])*int(SumSettings[self.proffession_number]["procent_text"])*0.01/day) + (int(SumSettings[self.proffession_number]["cv_five_tarif"])*int(SumSettings[self.proffession_number]["procent_text"])*0.01/day*cofficient)
+                    money = (int(SETTINGS[self.proffession_number]["cv_five_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day) + (int(SETTINGS[self.proffession_number]["cv_five_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day*cofficient)
                 elif prof == 6:
-                    money = (int(SumSettings[self.proffession_number]["cv_six_tarif"])*int(SumSettings[self.proffession_number]["procent_text"])*0.01/day) + (int(SumSettings[self.proffession_number]["cv_six_tarif"])*int(SumSettings[self.proffession_number]["procent_text"])*0.01/day*cofficient)
+                    money = (int(SETTINGS[self.proffession_number]["cv_six_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day) + (int(SETTINGS[self.proffession_number]["cv_six_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day*cofficient)
                 return float('{:.2f}'.format(money))
             new_dict = {}
             # Пробегаемся по всем табельным
@@ -417,6 +435,6 @@ class MAIN_WORK_TABLE(QWidget):
     
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    main = MAIN_WORK_TABLE("08300")
+    main = MAIN_WORK_TABLE("87100")
     main.show()
     sys.exit(app.exec_())

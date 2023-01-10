@@ -31,8 +31,6 @@ class CREATE_JSON_DATA():
         all_data["шифр"][self.profession_number] = {"Табельный":[]}
         all_data["шифр"][self.profession_number]["Табельный"]={}
 
-        print("[INFO]=1")
-
         # ищем ячейку с которой начинается шифр профессии
         for row in range(0,work_sheet.nrows):
             x = work_sheet.cell(row,4).value
@@ -41,8 +39,6 @@ class CREATE_JSON_DATA():
                 # start_row = row-2
                 print(start_row)
                 break
-        
-        print("[INFO]=2")
         
         # ищем последнюю ячейку для данного шифра профессии
         for row in range(start_row,work_sheet.nrows,2):
@@ -161,7 +157,7 @@ class CREATE_JSON_DATA():
         
         self.data_month = work_sheet.cell(1,2).value
        
-        self.file_path = (f"{self.data_year}\\{self.data_month}")
+        self.file_path = (f"{self.data_year}\\{self.data_month}\\data")
         if not os.path.exists(self.file_path):
             os.makedirs(self.file_path)
         with open(f"{self.file_path}/{self.profession_number}_{self.data_month}_{self.data_year}.json", "w", encoding="utf-8") as file:
@@ -214,7 +210,7 @@ class CREATE_JSON_DATA():
         
         settings = configparser.ConfigParser()
         settings.read("data/SETTINGS.ini", encoding="utf-8")
-        settings["Settings"][f"current_directory_{self.profession_number}"] = f"{self.file_path}\\{self.profession_number}_{self.data_month}_{self.data_year}.json"
+        settings["Settings"][f"current_directory_{self.profession_number}"] = f"{self.file_path}\{self.profession_number}_{self.data_month}_{self.data_year}.json"
         with open("data\SETTINGS.ini", "w", encoding="utf-8") as configfile:
             settings.write(configfile)
 

@@ -103,11 +103,13 @@ class MAIN_WINDOW(QMainWindow):
         TableFOTO = MAIN_WORK_TABLE("08300")
         self.tabWidget.insertTab(3, TableFOTO, f"Фотолаборанты(08300)")
         self.tabWidget.removeTab(2)
+    
 
 
     def SETTINGS_TAB(self):
         SETTINGS = Settings_window()        
-        self.tabWidget.insertTab(4, SETTINGS, f"Настройки")     
+        self.tabWidget.insertTab(4, SETTINGS, f"Настройки") 
+    
     
 
 if __name__ == '__main__':
