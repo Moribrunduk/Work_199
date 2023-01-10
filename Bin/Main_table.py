@@ -1,5 +1,6 @@
 
 import sys
+import os
 from PyQt5.QtCore import QSettings
 from PyQt5.QtGui import QStandardItemModel,QStandardItem,QColor
 from PyQt5.QtWidgets import QWidget,QHBoxLayout,QTableView,QApplication,QPushButton,QGridLayout,QMainWindow,QVBoxLayout
@@ -8,18 +9,20 @@ import configparser
 from collections import Counter
 
 from Create_final_excell_file import CREATE_EXCELL
+from Load_file_form import Change_profession
+
 
 class MAIN_WORK_TABLE(QWidget): 
-    settings = QSettings("temp.ini", QSettings.IniFormat)
+    
     def __init__(self,proffession_number):
-        self.proffession_number = proffession_number
+        self.proffession_number = str(proffession_number)
         super(MAIN_WORK_TABLE, self).__init__()
         self.initUI()
         
     def initUI(self):
         self.setWindowTitle("Расчет 199 премии")
         self.resize(500,300)
-        self.model = QStandardItemModel(60,20)
+        self.model = QStandardItemModel()
         self.data_table_view = QTableView()
         self.data_table_view.setModel(self.model)
 
@@ -28,14 +31,13 @@ class MAIN_WORK_TABLE(QWidget):
         self.Button_layout = QVBoxLayout()
 
         self.button = QPushButton("Создать файл для печати")
-        
-        
         self.button.clicked.connect(self.ButtonAction)
-        
-        
-        
+        self.button2 = QPushButton("Выбрать другой файл")
+        self.button2.clicked.connect(self.ButtonActionChangeFile)
+
         self.top_layout.addWidget(self.data_table_view,0,0)
         self.Button_layout.addWidget(self.button)
+        self.Button_layout.addWidget(self.button2)
 
         self.main_layout.addLayout(self.top_layout)
         self.main_layout.addLayout(self.Button_layout)
@@ -45,9 +47,9 @@ class MAIN_WORK_TABLE(QWidget):
         self.save_input_user_for_load_in_file = {}
         self.save_input_user_for_summ_in_file = {}
         
-        settings = configparser.ConfigParser()
-        settings.read("data/SETTINGS.ini", encoding="utf-8")
-        current_path = settings["Settings"][f"current_directory_{self.proffession_number}"]
+        SETTINGS = configparser.ConfigParser()
+        SETTINGS.read("data/SETTINGS.ini", encoding="utf-8")
+        current_path = SETTINGS["Settings"][f"current_directory_{self.proffession_number}"]
         with open(f"{current_path}", "r", encoding="utf-8") as file:
              self.all_data = json.load(file)
         self.tabels = self.all_data["шифр"][self.proffession_number]["Табельный"]
@@ -60,6 +62,19 @@ class MAIN_WORK_TABLE(QWidget):
     def ButtonAction(self):
         self.CE = CREATE_EXCELL(self.proffession_number)
         self.CE.Main()
+    
+    def ButtonActionChangeFile(self):
+        SETTINGS = configparser.ConfigParser()
+        SETTINGS.read("data/SETTINGS.ini", encoding="utf-8")
+        SETTINGS["Settings"][f"path_{self.proffession_number}"] = ""
+        SETTINGS["Settings"][f"current_directory_{self.proffession_number}"] = ""
+        with open("data\SETTINGS.ini", "w", encoding="utf-8") as configfile:
+            SETTINGS.write(configfile)
+
+        self.close()
+        
+
+    
 
     def add_data(self):
 
@@ -85,6 +100,16 @@ class MAIN_WORK_TABLE(QWidget):
                 self.model.setItem(x+1, work_column-16, item)
                 work_column+=1
 
+        # добавляем коряво ячейки TODO
+        x=1+1
+        work_column =0
+        #задаем начальный столбец
+        for tabel in self.tabels:
+            #создаем итем
+            item = QStandardItem("")
+            #делаем его нередактируемым
+            self.model.setItem(x, work_column, item)
+            x=x+2
         # ДОБАВЛЯЕМ ТАБЕЛЬНЫЕ
 
         x=1+1
@@ -191,11 +216,16 @@ class MAIN_WORK_TABLE(QWidget):
     def input_user_color_and_save(self):
         # загружаем данные из файла, и если файла нет используем пустой словарь
         try:
-            data_dict_from_input_user = self.settings.value('input_user')
+            # извлекаем из JSON год и месяц
+            self.year=self.all_data["шифр"][self.proffession_number]["год_месяц"][0]
+            self.month = self.all_data["шифр"][self.proffession_number]["год_месяц"][1]
+            self.TEMP = QSettings(f'{self.year}\\{self.month}\\temp.ini', QSettings.IniFormat)
+            
+            data_dict_from_input_user = self.TEMP.value('input_user')
             data_dict_from_input_user = eval(data_dict_from_input_user)
             save_input_user_for_load_in_file = data_dict_from_input_user
             
-            data_dict_from_summ = self.settings.value("for_summ")
+            data_dict_from_summ = self.TEMP.value("for_summ")
             data_dict_from_summ = eval(data_dict_from_summ)
             save_input_user_for_summ_in_file = data_dict_from_summ
         except:
@@ -278,22 +308,27 @@ class MAIN_WORK_TABLE(QWidget):
             except KeyError:
                 print("-")
         
-        self.settings.setValue("input_user", str(save_input_user_for_load_in_file))
+        self.TEMP.setValue("input_user", str(save_input_user_for_load_in_file))
         # self.settings.beginGroup("406")
-        self.settings.setValue("for_summ", str(save_input_user_for_summ_in_file))
+        self.TEMP.setValue("for_summ", str(save_input_user_for_summ_in_file))
         # self.settings.endGroup()
         print(save_input_user_for_load_in_file)
         print(save_input_user_for_summ_in_file)
 
-        
-    def pr(self):
-        print("1")
+
     def load_data(self):
         try:
-            data_dict = self.settings.value('input_user')
+            self.year=self.all_data["шифр"][self.proffession_number]["год_месяц"][0]
+            self.month = self.all_data["шифр"][self.proffession_number]["год_месяц"][1]
+            
+            self.TEMP = QSettings(f'{self.year}\\{self.month}\\temp.ini', QSettings.IniFormat)
+            data_dict = self.TEMP.value('input_user')
+        
             data_dict = eval(data_dict)
-        # формат словаря
-        # {(строка,ячейка):(табельный,(R,G,B цвет))
+            
+            
+            # формат словаря
+            # {(строка,ячейка):(табельный,(R,G,B цвет))
             for Key, Value in data_dict.items():
                 row = Key[0]
                 column = Key[1]
@@ -301,7 +336,8 @@ class MAIN_WORK_TABLE(QWidget):
                 item.setBackground(QColor(Value[1][0],Value[1][1],Value[1][2]))
                 self.model.setItem(row, column,item)
         except:
-            print(f'[INFO] -в блоке load_data {Exception}')
+            print("НЕТ ФАЙЛА")
+        
 
     def summ_pay(self):
         # загружаем данные из файла с настройками
@@ -381,6 +417,6 @@ class MAIN_WORK_TABLE(QWidget):
     
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    main = MAIN_WORK_TABLE("87100")
+    main = MAIN_WORK_TABLE("08300")
     main.show()
     sys.exit(app.exec_())

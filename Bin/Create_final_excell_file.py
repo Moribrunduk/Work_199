@@ -8,7 +8,7 @@ from Create_file_with_user_input_in_table import CREATE_FILE
 
 class CREATE_EXCELL():
     def __init__(self, profession_code):
-        self.profession_code = profession_code
+        self.profession_code = str(profession_code)
         super(CREATE_EXCELL, self).__init__()
         self.Main()
 

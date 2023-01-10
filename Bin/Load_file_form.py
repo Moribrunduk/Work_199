@@ -1,6 +1,6 @@
 import sys
 sys.path.insert(1,"Bin")
-from PyQt5.QtWidgets import QWidget, QApplication,QPushButton,QHBoxLayout,QFileDialog,QVBoxLayout,QLabel,QFrame
+from PyQt5.QtWidgets import QWidget, QApplication,QPushButton,QHBoxLayout,QFileDialog,QVBoxLayout,QLineEdit
 from PyQt5.QtCore import Qt
 import configparser
 import xlrd
@@ -25,14 +25,17 @@ class Change_profession(QWidget):
         
 
         self.right_layout = QVBoxLayout()
-        self.file_label = QLabel("Выберите файл")
+        self.file_label = QLineEdit("Выберите файл")
+        self.file_label.setReadOnly(True)
         self.file_label.setStyleSheet("font: 10pt")
         self.file_label.setAlignment(Qt.AlignCenter)
 
         self.right_layout_for_button = QHBoxLayout()
         self.OK_button = QPushButton("OK")
+
         self.change_button = QPushButton("Изменить")
         self.change_button.clicked.connect(self.get_file_directory)
+
         self.right_layout_for_button.addWidget(self.OK_button)
         self.right_layout_for_button.addWidget(self.change_button)
 
@@ -45,29 +48,32 @@ class Change_profession(QWidget):
         self.setLayout(self.main_layout)
 
     def get_file_directory(self):
-        settings = configparser.ConfigParser()
-        settings.read("data\SETTINGS.ini",encoding="utf-8")
+        # функция которая записывает в файл путь к последнему выбранному файлу и файлу
+        self.settings = configparser.ConfigParser()
+        self.settings.read("data\SETTINGS.ini",encoding="utf-8")
         filepath, filetype = QFileDialog.getOpenFileName(self,
                              "Выбрать файл",
                              ".",
                              "Text Files(*.xls)")
-        settings["Settings"][f'Path_{self.profession_number}'] = filepath
+        self.settings["Settings"][f'Path_{self.profession_number}'] = filepath
 
         work_book = xlrd.open_workbook(filepath)
         work_sheet = work_book.sheet_by_name("Табель")
-        data_year = work_sheet.cell(1,0).value
-        print(data_year)
-        data_month = work_sheet.cell(1,2).value
-        print(data_month)
+        self.data_year = work_sheet.cell(1,0).value.replace(" ",'')
+        print(self.data_year)
+        self.data_month = work_sheet.cell(1,2).value
+        print(self.data_month)
+        # файл куда сохраняюся все, что ввел пользователь
+        self.settings["Settings"][f'Path_with_input_{self.profession_number}'] = f"{self.data_year}\\{self.data_month}\\temp.ini"
+
         with open("data\SETTINGS.ini", "w", encoding="utf-8") as configfile:
-            settings.write(configfile)
-        self.file_label.setText(f"{data_month} {data_year}")
+            self.settings.write(configfile)
+        self.file_label.setText(f"{self.data_month} {self.data_year}")
 
-        self.CREATE_JSON_FILE = CREATE_JSON_DATA(int(self.profession_number))
+        self.CREATE_JSON_FILE = CREATE_JSON_DATA(self.profession_number)
         self.CREATE_JSON_FILE.main()
-
-        
-        
+    
+    
     
 if __name__ == "__main__":
     app = QApplication(sys.argv)

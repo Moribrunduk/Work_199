@@ -7,7 +7,7 @@ import configparser
 
 class CREATE_JSON_DATA():
     def __init__(self,profession_number):
-        self.profession_number = int(profession_number)
+        self.profession_number = str(profession_number)
     def main(self):
         self.get_data_personal()
         self.day_for_personal()
@@ -31,13 +31,18 @@ class CREATE_JSON_DATA():
         all_data["шифр"][self.profession_number] = {"Табельный":[]}
         all_data["шифр"][self.profession_number]["Табельный"]={}
 
+        print("[INFO]=1")
+
         # ищем ячейку с которой начинается шифр профессии
         for row in range(0,work_sheet.nrows):
             x = work_sheet.cell(row,4).value
             if x == self.profession_number:
-                start_row = row-2
+                start_row = row
+                # start_row = row-2
                 print(start_row)
                 break
+        
+        print("[INFO]=2")
         
         # ищем последнюю ячейку для данного шифра профессии
         for row in range(start_row,work_sheet.nrows,2):
@@ -45,8 +50,10 @@ class CREATE_JSON_DATA():
             x = x.partition(".")[0]
             
             if str(x) == str(self.profession_number):
+                # +2 чтобы цеплял последнего человека([TEST])
                 final_row = row+2
-            final_row
+                
+           
            
         # создаем календарь рабочего времени(для програмного расчета, начало с 0 последнее число 32)
         base_calendar = []
@@ -71,7 +78,8 @@ class CREATE_JSON_DATA():
                     else:
                         work_time_calendar[i+1+15]=int(work_sheet.cell(row,cell).value)
         
-        
+        # добавляем рабочий календарь
+        all_data["шифр"][self.profession_number]["год_месяц"] = (work_sheet.cell(1,0).value.replace(" ",''),work_sheet.cell(1,2).value)
         all_data["шифр"][self.profession_number]["Рабочий календарь"]=work_time_calendar
 
         # # заполняем нашу базу данных из файла, по каждому табельному
@@ -165,40 +173,40 @@ class CREATE_JSON_DATA():
             all_data = json.load(file)
 
         # Обьединяем со вторым файлом 
-        for personal_number in all_data["шифр"]["87100"]["Табельный"]:
+        for personal_number in all_data["шифр"][self.profession_number]["Табельный"]:
 
         # каждому табельному создаем словарь
             personal_number_for_him_dict = {}
 
             # пробегаемся у этого табельного по пропущенным сменам
-            for data in all_data["шифр"]["87100"]["Табельный"][personal_number]["Пропущенные смены"]:
+            for data in all_data["шифр"][self.profession_number]["Табельный"][personal_number]["Пропущенные смены"]:
                 #Проверяем если в причине пропущеной смены цифра(значит, человек брал часы), пропускаем этот день
-                if all_data["шифр"]["87100"]["Табельный"][personal_number]["Причина пропуска смен"][str(data)] in range(0,8):
+                if all_data["шифр"][self.profession_number]["Табельный"][personal_number]["Причина пропуска смен"][str(data)] in range(0,8):
                     continue
 
                 # проверяем совпадает ли день на замещение с выходным, пропускаем этот день
 
 
-                if all_data["шифр"]["87100"]["Рабочий календарь"][str(data)]=="-":
+                if all_data["шифр"][self.profession_number]["Рабочий календарь"][str(data)]=="-":
                     continue
 
                 # создаем список людей которые могут замещать в пропущенную смену
                 personal_number_for_him_in_data = []
 
                 #пробегаем по всем табельным и проверяем кто не отсутствовал в указанную дату
-                for item in all_data["шифр"]["87100"]["Табельный"]:
+                for item in all_data["шифр"][self.profession_number]["Табельный"]:
                     # исключаем из списка табельный проверяемого
                     if item == personal_number:
                         continue
-                    # print(f'{item}---{all_data["шифр"]["87100"]["Табельный"][item]["Пропущенные смены"]}')
-                    if data not in all_data["шифр"]["87100"]["Табельный"][item]["Пропущенные смены"]:
+                    # print(f'{item}---{all_data["шифр"][self.profession_number]["Табельный"][item]["Пропущенные смены"]}')
+                    if data not in all_data["шифр"][self.profession_number]["Табельный"][item]["Пропущенные смены"]:
                         #добавлеям в список табельные которые могут замещать на конкретную дату
                         personal_number_for_him_in_data.append(item)
                     
                     #заполняем словарь по датам
                     personal_number_for_him_dict[data]=personal_number_for_him_in_data
             # добавляем словарь каждому табельному
-            all_data["шифр"]["87100"]["Табельный"][personal_number]["Замещающие"]=personal_number_for_him_dict
+            all_data["шифр"][self.profession_number]["Табельный"][personal_number]["Замещающие"]=personal_number_for_him_dict
 
         #создание папки
         with open(f"{self.file_path}/{self.profession_number}_{self.data_month}_{self.data_year}.json", "w", encoding="utf-8") as file:
@@ -211,5 +219,5 @@ class CREATE_JSON_DATA():
             settings.write(configfile)
 
 if __name__ == "__main__":
-    m = CREATE_JSON_DATA(87100)
+    m = CREATE_JSON_DATA("08300")
     m.main()

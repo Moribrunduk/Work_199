@@ -16,24 +16,21 @@ class CREATE_FILE():
 
 
     def LoadPathInformation(self):
-        # открываем файл в котором записаны значения которые вводил пользователь
-        if os.path.isfile('temp.ini'):
-            self.TEMP = configparser.ConfigParser()
-            self.TEMP.read('temp.ini')
-        else:
-            config = configparser.ConfigParser()
-            config.add_section("General")
-            config["General"]["input_user"] = '"{(, ): ('', (, , ))}"'
-            config["General"]["for_summ"] = '"{(0, 0): 0}"'
-            # config.set("General", "input_user", "'{('',''): ('',('','',''))}'")
-            # config.set("General", "for_summ", "'{('',''): ''}'")
-            with open('temp.ini', "w") as config_file:
-                config.write(config_file)
-
+        
+        
         # открываем фал и берем оттуда путь с которым сейчас работает пользователь
         self.SETINGS  = configparser.ConfigParser()
         self.SETINGS.read('data\\SETTINGS.ini', encoding="utf-8")
         self.SETINGS_current_path = self.SETINGS['Settings'][f'current_directory_{self.profession_number}']
+       
+
+        # открываем файл в котором записаны значения которые вводил пользователь
+        self.SETINGS_current_path_user_input = self.SETINGS['Settings'][f'path_with_input_{self.profession_number}']
+        
+        if os.path.isfile(f'{self.SETINGS_current_path_user_input}'):
+            self.TEMP = configparser.ConfigParser()
+            self.TEMP.read(f'{self.SETINGS_current_path_user_input}')
+
         # файл для записи
         self.substitutes = configparser.ConfigParser()
         self.substitutes.read('datalist of substitutes')

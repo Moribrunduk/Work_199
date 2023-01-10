@@ -90,12 +90,7 @@ class Avtorisation_widow(QWidget):
             self.cont = MAIN_WINDOW()
             self.close()
             # TODO
-        # except KeyError:
-        #     CSD = CREATE_SETTINGS_DEFAULT()
-        #     CSD.main()
-    # def create_json(self):
-    #     CJD = CREATE_JSON_DATA(87100)
-    #     CJD.main()
+           
 
 if __name__ == '__main__':
     

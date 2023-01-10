@@ -7,7 +7,7 @@ from PyQt5.QtCore import Qt
 
 from Main_table import MAIN_WORK_TABLE
 from Settings_form_window.Main_settings_window import Settings_window
-from Create_json_file import CREATE_JSON_DATA
+
 from Load_file_form import Change_profession
 import configparser
 
@@ -36,12 +36,10 @@ class MAIN_WINDOW(QMainWindow):
         if settings["Settings"]["path_87100"] == "":
             TableDRGG = Change_profession("87100")
             TableDRGG.OK_button.clicked.connect(self.load_tab_drgg)
-            # CJD = CREATE_JSON_DATA("87100")
-            # TableDRGG.OK_button.clicked.connect(self.CJD.main())
             self.tabWidget.insertTab(1,TableDRGG, f"Дефектоскописты РГГ(87100)")
             
         else:
-            if not os.path.isfile(f'settings["Settings"]["path_87100"]'):
+            if not os.path.isfile(f'{settings["Settings"]["path_87100"]}'):
                 TableDRGG = Change_profession("87100")
                 TableDRGG.OK_button.clicked.connect(self.load_tab_drgg)
                 self.tabWidget.insertTab(1,TableDRGG, f"Дефектоскописты РГГ(87100)")
@@ -60,16 +58,22 @@ class MAIN_WINDOW(QMainWindow):
         settings = configparser.ConfigParser()
         settings.read("data\SETTINGS.ini",encoding="utf-8")
         if settings["Settings"]["path_87200"] == "":
-            TablePZRS = Change_profession("87100")
+            TablePZRS = Change_profession("87200")
             TablePZRS.OK_button.clicked.connect(self.load_tab_pzrs)
             self.tabWidget.insertTab(2, TablePZRS, f"Дефектоскописты ПЗРС(87200)")
+
         else:
-            TablePZRS = MAIN_WORK_TABLE("87100")
-            self.tabWidget.insertTab(2, TablePZRS, f"Дефектоскописты ПЗРС(87200)")
+            if not os.path.isfile(f'{settings["Settings"]["path_87200"]}'):
+                TablePZRS = Change_profession("87200")
+                TablePZRS.OK_button.clicked.connect(self.load_tab_pzrs)
+                self.tabWidget.insertTab(2,TablePZRS, f"Дефектоскописты ПЗРС(87200)")
+            else:
+                TablePZRS = MAIN_WORK_TABLE("87200")
+                self.tabWidget.insertTab(2,TablePZRS, f"Дефектоскописты ПЗРС(87200)")
         
     
     def load_tab_pzrs(self):
-        TablePZRS = MAIN_WORK_TABLE("87100")
+        TablePZRS = MAIN_WORK_TABLE("87200")
         self.tabWidget.insertTab(2, TablePZRS, f"Дефектоскописты ПЗРС(87200)")
         self.tabWidget.removeTab(1)
 
@@ -77,16 +81,26 @@ class MAIN_WINDOW(QMainWindow):
     def Tab_FOTO(self):
         settings = configparser.ConfigParser()
         settings.read("data\SETTINGS.ini",encoding="utf-8")
+
         if settings["Settings"]["path_08300"] == "":
-            TableFOTO = Change_profession("87100")
-            TableFOTO.OK_button.clicked.connect(self.load_tab_pzrs)
-            self.tabWidget.insertTab(3, TableFOTO, f"Фотолаборанты(08300)")
-        else:
-            TablePZRS = MAIN_WORK_TABLE("87100")
+            TableFOTO = Change_profession("08300")
+            TableFOTO.OK_button.clicked.connect(self.load_tab_foto)
             self.tabWidget.insertTab(3, TableFOTO, f"Фотолаборанты(08300)")
 
-    def load_tab_pzrs(self):
-        TableFOTO = MAIN_WORK_TABLE("87100")
+        else:
+            
+            if not os.path.isfile(f'{settings["Settings"]["path_08300"]}'):
+                TableFOTO = Change_profession("08300")
+                TableFOTO.OK_button.clicked.connect(self.load_tab_foto)
+                self.tabWidget.insertTab(3,TableFOTO, f"Фотолаборанты(08300)")
+            else:
+                TableFOTO = MAIN_WORK_TABLE("08300")
+                self.tabWidget.insertTab(3,TableFOTO, f"Фотолаборанты(08300)")
+
+            
+
+    def load_tab_foto(self):
+        TableFOTO = MAIN_WORK_TABLE("08300")
         self.tabWidget.insertTab(3, TableFOTO, f"Фотолаборанты(08300)")
         self.tabWidget.removeTab(2)
 
