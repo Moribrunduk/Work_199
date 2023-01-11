@@ -75,7 +75,16 @@ class CREATE_JSON_DATA():
                         work_time_calendar[i+1+15]=int(work_sheet.cell(row,cell).value)
         
         # добавляем рабочий календарь
-        all_data["шифр"][self.profession_number]["год_месяц"] = (work_sheet.cell(1,0).value.replace(" ",''),work_sheet.cell(1,2).value)
+        all_data["шифр"][self.profession_number]["Информация"] = {}
+        all_data["шифр"][self.profession_number]["Информация"]["год"] = (work_sheet.cell(1,0).value.replace(" ",''))
+        all_data["шифр"][self.profession_number]["Информация"]["месяц"] = (work_sheet.cell(1,2).value)
+        if self.profession_number == "87100":
+            all_data["шифр"][self.profession_number]["Информация"]["рабочих_дней"] = int(work_sheet.cell(9,23).value)
+            all_data["шифр"][self.profession_number]["Информация"]["рабочих_часов"] = int(work_sheet.cell(9,22).value)
+        if self.profession_number == "87200" or "87300":
+            all_data["шифр"][self.profession_number]["Информация"]["рабочих_дней"] = int(work_sheet.cell(7,23).value)
+            all_data["шифр"][self.profession_number]["Информация"]["рабочих_часов"] = int(work_sheet.cell(7,22).value)
+
         all_data["шифр"][self.profession_number]["Рабочий календарь"]=work_time_calendar
 
         # # заполняем нашу базу данных из файла, по каждому табельному

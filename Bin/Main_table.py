@@ -227,13 +227,14 @@ class MAIN_WORK_TABLE(QWidget):
 
 
     def input_user_color_and_save(self):
+        
+        
+        # извлекаем из JSON год и месяц
+        self.year=self.all_data["шифр"][self.proffession_number]["Информация"]["год"]
+        self.month = self.all_data["шифр"][self.proffession_number]["Информация"]["месяц"]
+        self.TEMP = QSettings(f'{self.year}\\{self.month}\\data\\{self.proffession_number}_input.ini', QSettings.IniFormat)
         # загружаем данные из файла, и если файла нет используем пустой словарь
         try:
-            # извлекаем из JSON год и месяц
-            self.year=self.all_data["шифр"][self.proffession_number]["год_месяц"][0]
-            self.month = self.all_data["шифр"][self.proffession_number]["год_месяц"][1]
-            self.TEMP = QSettings(f'{self.year}\\{self.month}\\data\\{self.proffession_number}_input.ini', QSettings.IniFormat)
-            
             data_dict_from_input_user = self.TEMP.value('input_user')
             data_dict_from_input_user = eval(data_dict_from_input_user)
             save_input_user_for_load_in_file = data_dict_from_input_user
@@ -276,8 +277,6 @@ class MAIN_WORK_TABLE(QWidget):
                                                     ]
                     except:
                         pass
-
-                    
 
                 elif user_input not in self.tabels[tabel]["Замещающие"][date]:
                     self.model.item(row, column).setBackground(QColor(255,0,0))
@@ -331,15 +330,13 @@ class MAIN_WORK_TABLE(QWidget):
 
     def load_data(self):
         try:
-            self.year=self.all_data["шифр"][self.proffession_number]["год_месяц"][0]
-            self.month = self.all_data["шифр"][self.proffession_number]["год_месяц"][1]
+            self.year=self.all_data["шифр"][self.proffession_number]["Информация"]["год"]
+            self.month = self.all_data["шифр"][self.proffession_number]["Информация"]["месяц"]
             
             self.TEMP = QSettings(f'{self.year}\\{self.month}\\data\\{self.proffession_number}_input.ini', QSettings.IniFormat)
             data_dict = self.TEMP.value('input_user')
         
             data_dict = eval(data_dict)
-            
-            
             # формат словаря
             # {(строка,ячейка):(табельный,(R,G,B цвет))
             for Key, Value in data_dict.items():
@@ -353,21 +350,41 @@ class MAIN_WORK_TABLE(QWidget):
         
 
     def summ_pay(self):
-        # загружаем данные из файла с настройками
-        SETTINGS = configparser.ConfigParser()
-        SETTINGS.read("data\SETTINGS.ini", encoding="utf-8")
-        SETTINGS_TEMP_PATH = SETTINGS["Settings"][f"path_with_input_{self.proffession_number}"]
+            # загружаем данные из файла с настройками
+            SETTINGS = configparser.ConfigParser()
+            SETTINGS.read("data\SETTINGS.ini", encoding="utf-8")
+            SETTINGS_TEMP_PATH = SETTINGS["Settings"][f"path_with_input_{self.proffession_number}"]
+            SETTINGS_JSON_PATH = SETTINGS["Settings"][f"current_directory_{self.proffession_number}"]
 
-        INPUT_TEMP = configparser.ConfigParser()
-        INPUT_TEMP.read(SETTINGS_TEMP_PATH, encoding="utf-8")
-        payment_list = []
-        list_tabel = []
-        day = 21
-        cofficient = 0.24
-        try:
+            INPUT_TEMP = configparser.ConfigParser()
+            INPUT_TEMP.read(SETTINGS_TEMP_PATH, encoding="utf-8")
+            payment_list = []
+            list_tabel = []
+
+            # загружаем данные из джсон
+            with open(f'{SETTINGS_JSON_PATH}', "r", encoding="utf-8") as file:
+                all_data = json.load(file)
+            # количество рабочих дней\часов
+            day = all_data["шифр"][self.proffession_number]["Информация"]["рабочих_дней"]
+            hours = all_data["шифр"][self.proffession_number]["Информация"]["рабочих_часов"]
+            # применям коэффициенты вредности
+            if self.proffession_number == "87100":
+                cofficient = 0.24
+
+            if self.proffession_number == "87200":
+                cofficient = 0.04
+            
+            if self.proffession_number == "08300":
+                cofficient = 0.08
+            
+
+        
             data_dict = INPUT_TEMP["General"]["for_summ"]
             data_dict = json.loads(data_dict)
             data_dict = eval(data_dict)
+            print("----словарь_с_данными для суммы-----")
+            print(data_dict)
+            
             def summ_tabel(prof):
                 if prof == 3:
                     money = (int(SETTINGS[self.proffession_number]["cv_three_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day) + (int(SETTINGS[self.proffession_number]["cv_three_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day*cofficient)  
@@ -406,16 +423,16 @@ class MAIN_WORK_TABLE(QWidget):
                 else:
                     payment_list.append(new_dict)
 
-                    
                         
-                            # if new_dict not in payment_list:
-                            #     payment_list.append(new_dict)
-            print(new_dict)
-            print(dict(c))
-            print(payment_list)
+                            
+                                # if new_dict not in payment_list:
+                                #     payment_list.append(new_dict)
+                # print(new_dict)
+                # print(dict(c))
+                # print(payment_list)
             
-        except:
-            print(f'[INFO] -в блоке SUMM_PAY- {Exception}')
+        # except:
+            # print(f'[INFO] -в блоке SUMM_PAY- {Exception}')
 
                   
     def parameters(self):
