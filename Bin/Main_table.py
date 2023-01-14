@@ -282,9 +282,12 @@ class MAIN_WORK_TABLE(QWidget):
                     self.model.item(row, column).setBackground(QColor(255,0,0))
                     save_input_user_for_load_in_file[row,column] = user_input, (255,0,0)
 
-                    save_input_user_for_summ_in_file[self.model.index(row-1,0).data(),
-                                                    self.model.index(1,column-16).data()
-                                                    ] =  user_input
+                    # save_input_user_for_summ_in_file[self.model.index(row-1,0).data(),
+                    #                                 self.model.index(1,column-16).data()
+                    #                                 ] =  user_input
+                    # save_input_user_for_summ_in_file[self.model.index(row-1,0).data(),
+                    #                                 self.model.index(1,column-16).data()
+                    #                                 ] =  user_input
 
             except KeyError:
                 print("-")
@@ -314,9 +317,9 @@ class MAIN_WORK_TABLE(QWidget):
                 elif user_input not in self.tabels[tabel]["Замещающие"][date]:
                     self.model.item(row, column).setBackground(QColor(255,0,0))
                     save_input_user_for_load_in_file[row,column] = user_input, (255,0,0)
-                    save_input_user_for_summ_in_file[self.model.index(row,0).data(),
-                                                    self.model.index(0,column-16).data()
-                                                    ] = user_input
+                    # save_input_user_for_summ_in_file[self.model.index(row,0).data(),
+                    #                                 self.model.index(0,column-16).data()
+                    #                                 ] = user_input
             except KeyError:
                 print("-")
         
@@ -379,22 +382,23 @@ class MAIN_WORK_TABLE(QWidget):
         
 
     
+        
         if os.path.isfile(SETTINGS_TEMP_PATH):
-
             data_dict = INPUT_TEMP["General"]["for_summ"]
             data_dict = json.loads(data_dict)
-            data_dict = eval(data_dict)
-            print("----словарь_с_данными для суммы-----")
-            print(data_dict)
-            list_key=[]
+            try:
+                data_dict = eval(data_dict)
+                print("----словарь_с_данными для суммы-----")
+                print(data_dict)
+                list_key=[]
 
-            for key in data_dict.items():
-                list_key.append(key[0])
-            
-            list_key=list(set(list_key))
-            print(list_key)
-        else:
-            pass
+                for key in data_dict.items():
+                    list_key.append(key[0])
+                
+                list_key=list(set(list_key))
+                print(list_key)
+            except: TypeError
+    
 
         
                 
