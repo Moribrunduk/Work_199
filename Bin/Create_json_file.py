@@ -61,7 +61,11 @@ class CREATE_JSON_DATA():
                     base_calendar.append(int(work_sheet.cell(row,cell).value))
         
         work_time_calendar = {}
-        for row in range(9,10+1):
+        if self.profession_number == "87100":
+            start_row_work_calendar = 9
+        if self.profession_number == "87200" or "08300":
+            start_row_work_calendar = 7
+        for row in range(start_row_work_calendar,start_row_work_calendar+2):
             for i,cell in enumerate(range(6,22)):
                 if row ==9:
                     if work_sheet.cell(row,cell).value == "-":

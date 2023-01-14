@@ -22,6 +22,7 @@ class CREATE_FILE():
         self.SETINGS  = configparser.ConfigParser()
         self.SETINGS.read('data\\SETTINGS.ini', encoding="utf-8")
         self.SETINGS_current_path = self.SETINGS['Settings'][f'current_directory_{self.profession_number}']
+        self.SETINGS_JSON_PATH = self.SETINGS["Settings"][f"current_directory_{self.profession_number}"]
        
 
         # открываем файл в котором записаны значения которые вводил пользователь
@@ -30,11 +31,26 @@ class CREATE_FILE():
         if not os.path.isfile(f'{self.SETINGS_current_path_user_input}'):
             config = configparser.ConfigParser()
             config.add_section("General")
+            config.add_section("For_summ")
             config["General"]["input_user"] = '"{(, ): ('', (, , ))}"'
             config["General"]["for_summ"] = '"{(0, 0): 0}"'
             
+            
+            # with open(self.SETINGS_current_path_user_input, "w") as config_file:
+            #     config.write(config_file)
+
+            # with open(f'{self.SETINGS_JSON_PATH}', "r", encoding="utf-8") as file:
+            #     all_data = json.load(file)
+            
+            # for tabel in all_data["шифр"][self.profession_number]['Табельный']:
+            #     config["For_summ"][str(tabel)] = ""
+            # with open(self.SETINGS_current_path_user_input, "w") as config_file:
+            #     config.write(config_file)
+                
+            #     config["For_summ"] = str("abel")
             with open(self.SETINGS_current_path_user_input, "w") as config_file:
                 config.write(config_file)
+
             
         else:
             self.TEMP = configparser.ConfigParser()
@@ -232,5 +248,5 @@ class CREATE_FILE():
 
                 
 if __name__ == '__main__':
-        CF = CREATE_FILE(87100)
+        CF = CREATE_FILE("87100")
         CF.Main()

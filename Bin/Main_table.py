@@ -112,6 +112,37 @@ class MAIN_WORK_TABLE(QWidget):
                 item.setEditable(False)
                 self.model.setItem(x+1, work_column-16, item)
                 work_column+=1
+        
+        # ДОБАВЛЯЕМ ПОЧАСОВОЙ КАЛЕНДАРЬ
+        self.time_calendar = self.all_data["шифр"][self.proffession_number]["Рабочий календарь"]
+
+        x = 0
+        work_column=19
+        for i,value in enumerate(self.time_calendar.values()):
+            if i <15:
+                item = QStandardItem(str(value))
+                #делаем его нередактируемым
+                item.setEditable(False)
+                self.model.setItem(x, work_column, item)
+                work_column+=1
+            # т.к 16 колонка в календаре не используется добавляем туда прочерк
+            # а значение добавляем вс ледующую строку сначала
+            elif i == 15 :
+                item = QStandardItem("-")
+                item.setEditable(False)
+                self.model.setItem(x, work_column, item)
+                work_column+=1
+                item = QStandardItem(str(value))
+                item.setEditable(False)
+                self.model.setItem(x+1, work_column-16, item)
+                work_column+=1
+            else:
+                item = QStandardItem(str(value))
+                item.setEditable(False)
+                self.model.setItem(x+1, work_column-16, item)
+                work_column+=1
+            
+
 
         # добавляем коряво ячейки TODO
         x=1+1
@@ -232,17 +263,20 @@ class MAIN_WORK_TABLE(QWidget):
         # извлекаем из JSON год и месяц
         self.year=self.all_data["шифр"][self.proffession_number]["Информация"]["год"]
         self.month = self.all_data["шифр"][self.proffession_number]["Информация"]["месяц"]
-        self.TEMP = QSettings(f'{self.year}\\{self.month}\\data\\{self.proffession_number}_input.ini', QSettings.IniFormat)
+        self.TEMP = configparser.ConfigParser()
+        self.TEMP.read(f'{self.year}\\{self.month}\\data\\{self.proffession_number}_input.ini')
+        
         # загружаем данные из файла, и если файла нет используем пустой словарь
         try:
-            data_dict_from_input_user = self.TEMP.value('input_user')
+            data_dict_from_input_user = self.TEMP["General"]['input_user']
             data_dict_from_input_user = eval(data_dict_from_input_user)
             save_input_user_for_load_in_file = data_dict_from_input_user
             
-            data_dict_from_summ = self.TEMP.value("for_summ")
+            data_dict_from_summ = self.TEMP["General"]["for_summ"]
             data_dict_from_summ = eval(data_dict_from_summ)
             save_input_user_for_summ_in_file = data_dict_from_summ
         except:
+            self.TEMP["General"] = {}
             save_input_user_for_load_in_file = {}
             save_input_user_for_summ_in_file = {}
         
@@ -264,8 +298,9 @@ class MAIN_WORK_TABLE(QWidget):
                     save_input_user_for_load_in_file[row,column] = user_input, (0,128,0)
 
                     save_input_user_for_summ_in_file[self.model.index(row-1,0).data(),
-                                                    self.model.index(1,column-16).data(),
+                                                    self.model.index(1,column).data(),
                                                     ] =  user_input
+                    
 
                 elif user_input =="":
                     self.model.item(row, column).setBackground(QColor(0,128,128))
@@ -273,7 +308,7 @@ class MAIN_WORK_TABLE(QWidget):
 
                         del save_input_user_for_load_in_file[row,column] 
                         del save_input_user_for_summ_in_file[self.model.index(row-1,0).data(),
-                                                    self.model.index(1,column-16).data(),
+                                                    self.model.index(1,column).data(),
                                                     ]
                     except:
                         pass
@@ -285,9 +320,7 @@ class MAIN_WORK_TABLE(QWidget):
                     # save_input_user_for_summ_in_file[self.model.index(row-1,0).data(),
                     #                                 self.model.index(1,column-16).data()
                     #                                 ] =  user_input
-                    # save_input_user_for_summ_in_file[self.model.index(row-1,0).data(),
-                    #                                 self.model.index(1,column-16).data()
-                    #                                 ] =  user_input
+                    
 
             except KeyError:
                 print("-")
@@ -300,16 +333,16 @@ class MAIN_WORK_TABLE(QWidget):
                     self.model.item(row, column).setBackground(QColor(0,128,0))
                     save_input_user_for_load_in_file[row,column] = user_input, (0,128,0)
                     save_input_user_for_summ_in_file[self.model.index(row,0).data(),
-                                                    self.model.index(0,column-16).data()
+                                                    self.model.index(0,column).data()
                                                     ] = user_input
-
+                    print("[INFO] - - ", user_input)
                 elif user_input =="":
                     self.model.item(row, column).setBackground(QColor(0,128,128))
                     try:
 
                         del save_input_user_for_load_in_file[row,column] 
                         del save_input_user_for_summ_in_file[self.model.index(row,0).data(),
-                                                        self.model.index(0,column-16).data()
+                                                        self.model.index(0,column).data()
                                                         ]
                     except:
                         pass
@@ -317,28 +350,28 @@ class MAIN_WORK_TABLE(QWidget):
                 elif user_input not in self.tabels[tabel]["Замещающие"][date]:
                     self.model.item(row, column).setBackground(QColor(255,0,0))
                     save_input_user_for_load_in_file[row,column] = user_input, (255,0,0)
+                    print("[INFO] - - ", user_input)
                     # save_input_user_for_summ_in_file[self.model.index(row,0).data(),
                     #                                 self.model.index(0,column-16).data()
                     #                                 ] = user_input
             except KeyError:
                 print("-")
         
-        self.TEMP.setValue("input_user", str(save_input_user_for_load_in_file))
-        # self.settings.beginGroup("406")
-        self.TEMP.setValue("for_summ", str(save_input_user_for_summ_in_file))
-        # self.settings.endGroup()
-        print(save_input_user_for_load_in_file)
-        print(save_input_user_for_summ_in_file)
+        self.TEMP["General"]["input_user"]= str(save_input_user_for_load_in_file)
+        self.TEMP["General"]["for_summ"]  = str(save_input_user_for_summ_in_file)
+
+        with open(f'{self.year}\\{self.month}\\data\\{self.proffession_number}_input.ini', "w", encoding="utf-8") as configfile:
+            self.TEMP.write(configfile)
 
 
     def load_data(self):
         try:
             self.year=self.all_data["шифр"][self.proffession_number]["Информация"]["год"]
             self.month = self.all_data["шифр"][self.proffession_number]["Информация"]["месяц"]
-            
-            self.TEMP = QSettings(f'{self.year}\\{self.month}\\data\\{self.proffession_number}_input.ini', QSettings.IniFormat)
-            data_dict = self.TEMP.value('input_user')
-        
+            self.TEMP = configparser.ConfigParser()
+            self.TEMP.read(f'{self.year}\\{self.month}\\data\\{self.proffession_number}_input.ini')
+
+            data_dict = self.TEMP["General"]["input_user"]
             data_dict = eval(data_dict)
             # формат словаря
             # {(строка,ячейка):(табельный,(R,G,B цвет))
@@ -370,6 +403,7 @@ class MAIN_WORK_TABLE(QWidget):
         # количество рабочих дней\часов
         day = all_data["шифр"][self.proffession_number]["Информация"]["рабочих_дней"]
         hours = all_data["шифр"][self.proffession_number]["Информация"]["рабочих_часов"]
+
         # применям коэффициенты вредности
         if self.proffession_number == "87100":
             cofficient = 0.24
@@ -385,28 +419,59 @@ class MAIN_WORK_TABLE(QWidget):
         
         if os.path.isfile(SETTINGS_TEMP_PATH):
             data_dict = INPUT_TEMP["General"]["for_summ"]
-            data_dict = json.loads(data_dict)
-            try:
-                data_dict = eval(data_dict)
-                print("----словарь_с_данными для суммы-----")
-                print(data_dict)
-                list_key=[]
+            # создаем словарь табельных которые замещают
+            tabels_dict = {}
 
-                for key in data_dict.items():
-                    list_key.append(key[0])
-                
-                list_key=list(set(list_key))
-                print(list_key)
-            except: TypeError
-    
+            
+            data_dict = eval(data_dict)
+            print("----словарь_с_данными для суммы-----")
 
-        
+            def Summ(proffession_number):
+                level = all_data["шифр"][self.proffession_number]["Табельный"][proffession_number]["разряд"]
+                print(level)
+
                 
 
+                # if level == 3:
+                #     money = (int(SETTINGS[self.proffession_number]["cv_three_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day) + (int(SETTINGS[self.proffession_number]["cv_three_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day*cofficient)  
+                # elif level == 4:
+                #     money = (int(SETTINGS[self.proffession_number]["cv_four_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day) + (int(SETTINGS[self.proffession_number]["cv_four_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day*cofficient)
+                # elif level == 5:
+                #     money = (int(SETTINGS[self.proffession_number]["cv_five_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day) + (int(SETTINGS[self.proffession_number]["cv_five_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day*cofficient)
+                # elif level == 6:
+                #     money = (int(SETTINGS[self.proffession_number]["cv_six_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day) + (int(SETTINGS[self.proffession_number]["cv_six_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day*cofficient)
+                # return float('{:.2f}'.format(money))
+
+
+        # заполняем словарь(табельный:cумма)
+            for value in data_dict.values():
+                if value not in tabels_dict:
+                    tabels_dict[value] = 0
+
+            print(tabels_dict)
+            print(data_dict)
             
             
 
+            for tabel, summ in tabels_dict.items():
+                print(tabel, summ)
+                for key,values in data_dict.items():
+                    if values == tabel:
+                        Summ(key[0])
+                        summ = tabels_dict[tabel]
+                        tabels_dict[tabel]=summ+1
+            print(tabels_dict)
 
+            
+            
+            
+
+                
+                    
+
+                # list_key=list(set(list_key))
+                # print(list_key)
+            
         #     def summ_tabel(prof):
         #         if prof == 3:
         #             money = (int(SETTINGS[self.proffession_number]["cv_three_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day) + (int(SETTINGS[self.proffession_number]["cv_three_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day*cofficient)  
