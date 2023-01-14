@@ -1,0 +1,4 @@
+[General]
+input_user = "{(, ): (, (, , ))}"
+for_summ = "{(0, 0): 0}"
+

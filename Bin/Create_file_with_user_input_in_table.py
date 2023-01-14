@@ -27,10 +27,19 @@ class CREATE_FILE():
         # открываем файл в котором записаны значения которые вводил пользователь
         self.SETINGS_current_path_user_input = self.SETINGS['Settings'][f'path_with_input_{self.profession_number}']
         
-        if os.path.isfile(f'{self.SETINGS_current_path_user_input}'):
+        if not os.path.isfile(f'{self.SETINGS_current_path_user_input}'):
+            config = configparser.ConfigParser()
+            config.add_section("General")
+            config["General"]["input_user"] = '"{(, ): ('', (, , ))}"'
+            config["General"]["for_summ"] = '"{(0, 0): 0}"'
+            
+            with open(self.SETINGS_current_path_user_input, "w") as config_file:
+                config.write(config_file)
+            
+        else:
             self.TEMP = configparser.ConfigParser()
             self.TEMP.read(f'{self.SETINGS_current_path_user_input}')
-
+            
         # файл для записи
         self.substitutes = configparser.ConfigParser()
         self.substitutes.read('datalist of substitutes')
