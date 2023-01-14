@@ -66,17 +66,19 @@ class CREATE_JSON_DATA():
         if self.profession_number == "87200" or "08300":
             start_row_work_calendar = 7
         for row in range(start_row_work_calendar,start_row_work_calendar+2):
+        # for row in range(9,10+1):
             for i,cell in enumerate(range(6,22)):
-                if row ==9:
+                if row == start_row_work_calendar:
                     if work_sheet.cell(row,cell).value == "-":
                         work_time_calendar[i+1]=work_sheet.cell(row,cell).value
                     else:
                         work_time_calendar[i+1]=int(work_sheet.cell(row,cell).value)
-                if row == 10:
+                if row == start_row_work_calendar+1:
                     if work_sheet.cell(row,cell).value == "-":
                         work_time_calendar[i+1+15]=work_sheet.cell(row,cell).value
                     else:
                         work_time_calendar[i+1+15]=int(work_sheet.cell(row,cell).value)
+        print(work_time_calendar)                        
         
         # добавляем рабочий календарь
         all_data["шифр"][self.profession_number]["Информация"] = {}
@@ -89,7 +91,7 @@ class CREATE_JSON_DATA():
             all_data["шифр"][self.profession_number]["Информация"]["рабочих_дней"] = int(work_sheet.cell(7,23).value)
             all_data["шифр"][self.profession_number]["Информация"]["рабочих_часов"] = int(work_sheet.cell(7,22).value)
 
-        all_data["шифр"][self.profession_number]["Рабочий календарь"]=work_time_calendar
+        all_data["шифр"][self.profession_number]["Рабочий календарь"] = work_time_calendar
 
         # # заполняем нашу базу данных из файла, по каждому табельному
         all_data["шифр"][self.profession_number]["Табельный"]={}
