@@ -61,9 +61,12 @@ class CREATE_JSON_DATA():
                     base_calendar.append(int(work_sheet.cell(row,cell).value))
         
         work_time_calendar = {}
+        print(self.profession_number)
         if self.profession_number == "87100":
+           
             start_row_work_calendar = 9
-        if self.profession_number == "87200" or "08300":
+        elif self.profession_number == "87200" or "08300":
+            
             start_row_work_calendar = 7
         for row in range(start_row_work_calendar,start_row_work_calendar+2):
         # for row in range(9,10+1):
@@ -87,7 +90,7 @@ class CREATE_JSON_DATA():
         if self.profession_number == "87100":
             all_data["шифр"][self.profession_number]["Информация"]["рабочих_дней"] = int(work_sheet.cell(9,23).value)
             all_data["шифр"][self.profession_number]["Информация"]["рабочих_часов"] = int(work_sheet.cell(9,22).value)
-        if self.profession_number == "87200" or "87300":
+        elif self.profession_number == "87200" or "87300":
             all_data["шифр"][self.profession_number]["Информация"]["рабочих_дней"] = int(work_sheet.cell(7,23).value)
             all_data["шифр"][self.profession_number]["Информация"]["рабочих_часов"] = int(work_sheet.cell(7,22).value)
 
@@ -230,5 +233,5 @@ class CREATE_JSON_DATA():
             settings.write(configfile)
 
 if __name__ == "__main__":
-    m = CREATE_JSON_DATA("08300")
+    m = CREATE_JSON_DATA("87100")
     m.main()

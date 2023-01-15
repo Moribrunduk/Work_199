@@ -105,7 +105,7 @@ class CREATE_FILE():
 
         """
         list_of_user_input = self.TEMP['General']['for_summ']
-        list_of_user_input = eval(eval(list_of_user_input))
+        list_of_user_input = eval(list_of_user_input)
         # print (list_of_user_input)
 
         # задаем начальный день, когда первый раз идет замещение

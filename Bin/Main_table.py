@@ -296,9 +296,12 @@ class MAIN_WORK_TABLE(QWidget):
                     self.model.item(row, column).setBackground(QColor(0,128,0))
 
                     save_input_user_for_load_in_file[row,column] = user_input, (0,128,0)
-
+                    # (табельный,количество часов замещаемых,день замещения,разряд) 
                     save_input_user_for_summ_in_file[self.model.index(row-1,0).data(),
                                                     self.model.index(1,column).data(),
+                                                    self.model.index(1,column-16).data(),
+                                                    self.model.index(row-1,2).data(),
+
                                                     ] =  user_input
                     
 
@@ -308,8 +311,10 @@ class MAIN_WORK_TABLE(QWidget):
 
                         del save_input_user_for_load_in_file[row,column] 
                         del save_input_user_for_summ_in_file[self.model.index(row-1,0).data(),
-                                                    self.model.index(1,column).data(),
-                                                    ]
+                                                            self.model.index(1,column).data(),
+                                                            self.model.index(1,column-16).data(),
+                                                            self.model.index(row-1,2).data(),
+                                                            ]
                     except:
                         pass
 
@@ -333,7 +338,9 @@ class MAIN_WORK_TABLE(QWidget):
                     self.model.item(row, column).setBackground(QColor(0,128,0))
                     save_input_user_for_load_in_file[row,column] = user_input, (0,128,0)
                     save_input_user_for_summ_in_file[self.model.index(row,0).data(),
-                                                    self.model.index(0,column).data()
+                                                    self.model.index(0,column).data(),
+                                                    self.model.index(0,column-16).data(),
+                                                    self.model.index(row,2).data(),
                                                     ] = user_input
                     print("[INFO] - - ", user_input)
                 elif user_input =="":
@@ -342,7 +349,9 @@ class MAIN_WORK_TABLE(QWidget):
 
                         del save_input_user_for_load_in_file[row,column] 
                         del save_input_user_for_summ_in_file[self.model.index(row,0).data(),
-                                                        self.model.index(0,column).data()
+                                                        self.model.index(0,column).data(),
+                                                        self.model.index(0,column-16).data(),
+                                                        self.model.index(row,2).data(),
                                                         ]
                     except:
                         pass
@@ -400,20 +409,23 @@ class MAIN_WORK_TABLE(QWidget):
         # загружаем данные из джсон
         with open(f'{SETTINGS_JSON_PATH}', "r", encoding="utf-8") as file:
             all_data = json.load(file)
-        # количество рабочих дней\часов
-        day = all_data["шифр"][self.proffession_number]["Информация"]["рабочих_дней"]
+        # количество рабочих часов
         hours = all_data["шифр"][self.proffession_number]["Информация"]["рабочих_часов"]
+        print(hours)
+
 
         # применям коэффициенты вредности
         if self.proffession_number == "87100":
-            cofficient = 0.24
+            self.harmfulness = 0.24
+            self.coefficient = int(SETTINGS[self.proffession_number]["procent_text"])/100
 
-        if self.proffession_number == "87200":
-            cofficient = 0.04
-        
-        if self.proffession_number == "08300":
-            cofficient = 0.08
-        
+        elif self.proffession_number == "87200":
+            self.harmfulness = 0.04
+            self.coefficient = int(SETTINGS[self.proffession_number]["procent_text"])/100
+
+        elif self.proffession_number == "08300":
+            self.harmfulness = 0.08
+            self.coefficient = int(SETTINGS[self.proffession_number]["procent_text"])/100
 
     
         
@@ -425,42 +437,52 @@ class MAIN_WORK_TABLE(QWidget):
             
             data_dict = eval(data_dict)
             print("----словарь_с_данными для суммы-----")
+            
 
-            def Summ(proffession_number):
-                level = all_data["шифр"][self.proffession_number]["Табельный"][proffession_number]["разряд"]
+            def Summ(personal_number):
+                level = all_data["шифр"][self.proffession_number]["Табельный"][personal_number]["разряд"]
                 print(level)
-
-                
-
-                # if level == 3:
-                #     money = (int(SETTINGS[self.proffession_number]["cv_three_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day) + (int(SETTINGS[self.proffession_number]["cv_three_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day*cofficient)  
-                # elif level == 4:
-                #     money = (int(SETTINGS[self.proffession_number]["cv_four_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day) + (int(SETTINGS[self.proffession_number]["cv_four_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day*cofficient)
-                # elif level == 5:
-                #     money = (int(SETTINGS[self.proffession_number]["cv_five_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day) + (int(SETTINGS[self.proffession_number]["cv_five_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day*cofficient)
-                # elif level == 6:
-                #     money = (int(SETTINGS[self.proffession_number]["cv_six_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day) + (int(SETTINGS[self.proffession_number]["cv_six_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day*cofficient)
-                # return float('{:.2f}'.format(money))
+                if level == 3:
+                    # тариф
+                    tarif = int(SETTINGS[self.proffession_number]["cv_three_tarif"])
+                    money_per_hours = (tarif/hours)*self.coefficient
+                    money_per_hours_in_harmfullness = money_per_hours+money_per_hours*self.harmfulness
+                      
+                elif level == 4:
+                    tarif = int(SETTINGS[self.proffession_number]["cv_four_tarif"])
+                    money_per_hours = (tarif/hours)*self.coefficient
+                    money_per_hours_in_harmfullness = money_per_hours+money_per_hours*self.harmfulness
+                elif level == 5:
+                    tarif = int(SETTINGS[self.proffession_number]["cv_five_tarif"])
+                    money_per_hours = (tarif/hours)*self.coefficient
+                    money_per_hours_in_harmfullness = money_per_hours+money_per_hours*self.harmfulness
+                elif level == 6:
+                    tarif = int(SETTINGS[self.proffession_number]["cv_six_tarif"])
+                    money_per_hours = (tarif/hours)*self.coefficient
+                    money_per_hours_in_harmfullness = money_per_hours+money_per_hours*self.harmfulness
+                print(float('{:.2f}'.format(money_per_hours_in_harmfullness)))
+                return float('{:.2f}'.format(money_per_hours_in_harmfullness))
 
 
         # заполняем словарь(табельный:cумма)
-            for value in data_dict.values():
-                if value not in tabels_dict:
-                    tabels_dict[value] = 0
+        for value in data_dict.values():
+            if value not in tabels_dict:
+                tabels_dict[value] = 0
 
-            print(tabels_dict)
-            print(data_dict)
-            
-            
+        print("словарь для суммы",tabels_dict)
+        print("табельный замещаемого, часы, день, разряд --- замещающий")
+        print(data_dict)
+        
+        
 
-            for tabel, summ in tabels_dict.items():
-                print(tabel, summ)
-                for key,values in data_dict.items():
-                    if values == tabel:
-                        Summ(key[0])
-                        summ = tabels_dict[tabel]
-                        tabels_dict[tabel]=summ+1
-            print(tabels_dict)
+        for tabel, summ in tabels_dict.items():
+
+            for key,values in data_dict.items():
+                if values == tabel:
+                    money = Summ(key[0])*int(key[1])
+                    summ = tabels_dict[tabel]
+                    tabels_dict[tabel]=summ+money
+        print(tabels_dict)
 
             
             
