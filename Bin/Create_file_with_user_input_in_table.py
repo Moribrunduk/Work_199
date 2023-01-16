@@ -35,19 +35,6 @@ class CREATE_FILE():
             config["General"]["input_user"] = '"{(, ): ('', (, , ))}"'
             config["General"]["for_summ"] = '"{(0, 0): 0}"'
             
-            
-            # with open(self.SETINGS_current_path_user_input, "w") as config_file:
-            #     config.write(config_file)
-
-            # with open(f'{self.SETINGS_JSON_PATH}', "r", encoding="utf-8") as file:
-            #     all_data = json.load(file)
-            
-            # for tabel in all_data["шифр"][self.profession_number]['Табельный']:
-            #     config["For_summ"][str(tabel)] = ""
-            # with open(self.SETINGS_current_path_user_input, "w") as config_file:
-            #     config.write(config_file)
-                
-            #     config["For_summ"] = str("abel")
             with open(self.SETINGS_current_path_user_input, "w") as config_file:
                 config.write(config_file)
 
@@ -83,7 +70,9 @@ class CREATE_FILE():
             reason_list_x = [()]
             main_reason = self.reasons[0]
             for i,reason in enumerate(self.reasons):
-                print(f"{main_reason}-------{reason}")
+
+                # print(f"{main_reason}-------{reason}")
+
                 if main_reason == reason:
                     last_day = self.missed_working_days[i]
                     reason_list_x[count]=(ferst_day,last_day,reason)
@@ -96,7 +85,7 @@ class CREATE_FILE():
                     reason_list_x[count]=(ferst_day,last_day,reason)
                     
         
-        print(tabel_for_function,reason_list_x)
+        # print(tabel_for_function,reason_list_x)
         return reason_list_x
 
     def UserRework(self,tabel_for_function):
@@ -104,14 +93,24 @@ class CREATE_FILE():
         функция которая возвращает список (день начала замещения, последний день замещения, табельный замещающего)
 
         """
-        list_of_user_input = self.TEMP['General']['for_summ']
-        list_of_user_input = eval(list_of_user_input)
-        # print (list_of_user_input)
+        full_list_of_user_input = self.TEMP['General']['for_summ']
+        # словарь представлен как {(табельный,число,количество часов,день): замещающий табельный}
+        full_list_of_user_input = eval(full_list_of_user_input)
+
+        # преобразуем в словарь
+        # {(табельный,число): замещающий табельный}
+        list_of_user_input = {}
+        for key, value in full_list_of_user_input.items():
+            list_of_user_input[key[0:2]]=value
 
         # задаем начальный день, когда первый раз идет замещение
-        data_x = list(list_of_user_input.keys())[0][1]
+        data_x = int(list(list_of_user_input.keys())[0][1])
+        print(data_x)
+        
+        
         # Приравниваем конечный день, к начальному, чтобы изменять в дальнейшем
-        data_z = data_x
+        data_z = int(data_x)
+        print(data_z)
         # создаем лист замещения
         remoove_day_list = [()]
         item_namber = 0
@@ -123,6 +122,8 @@ class CREATE_FILE():
         for day in range(1,32):
             # если ключа (табельный, день) нет в словаре
             if (personal_number,str(day)) not in list_of_user_input:
+                print((personal_number,str(day)))
+                print(list_of_user_input)
                 # добавляем такой ключ со значением "-"
                 list_of_user_input_selected_number[personal_number,str(day)] = "-"
             else:
@@ -161,7 +162,6 @@ class CREATE_FILE():
         for item in remoove_day_list:
             if item[2] == "-":
                 remoove_day_list.remove(item)
-        
         return remoove_day_list
 
     def WriteInFile(self,tabel_for_function):

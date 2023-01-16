@@ -298,8 +298,8 @@ class MAIN_WORK_TABLE(QWidget):
                     save_input_user_for_load_in_file[row,column] = user_input, (0,128,0)
                     # (табельный,количество часов замещаемых,день замещения,разряд) 
                     save_input_user_for_summ_in_file[self.model.index(row-1,0).data(),
-                                                    self.model.index(1,column).data(),
                                                     self.model.index(1,column-16).data(),
+                                                    self.model.index(1,column).data(),
                                                     self.model.index(row-1,2).data(),
 
                                                     ] =  user_input
@@ -311,8 +311,8 @@ class MAIN_WORK_TABLE(QWidget):
 
                         del save_input_user_for_load_in_file[row,column] 
                         del save_input_user_for_summ_in_file[self.model.index(row-1,0).data(),
-                                                            self.model.index(1,column).data(),
                                                             self.model.index(1,column-16).data(),
+                                                            self.model.index(1,column).data(),
                                                             self.model.index(row-1,2).data(),
                                                             ]
                     except:
@@ -338,8 +338,8 @@ class MAIN_WORK_TABLE(QWidget):
                     self.model.item(row, column).setBackground(QColor(0,128,0))
                     save_input_user_for_load_in_file[row,column] = user_input, (0,128,0)
                     save_input_user_for_summ_in_file[self.model.index(row,0).data(),
+                                                    self.model.index(0,column-16).data(),    
                                                     self.model.index(0,column).data(),
-                                                    self.model.index(0,column-16).data(),
                                                     self.model.index(row,2).data(),
                                                     ] = user_input
                     print("[INFO] - - ", user_input)
@@ -349,8 +349,8 @@ class MAIN_WORK_TABLE(QWidget):
 
                         del save_input_user_for_load_in_file[row,column] 
                         del save_input_user_for_summ_in_file[self.model.index(row,0).data(),
-                                                        self.model.index(0,column).data(),
                                                         self.model.index(0,column-16).data(),
+                                                        self.model.index(0,column).data(),
                                                         self.model.index(row,2).data(),
                                                         ]
                     except:
@@ -464,86 +464,26 @@ class MAIN_WORK_TABLE(QWidget):
                 return float('{:.2f}'.format(money_per_hours_in_harmfullness))
 
 
-        # заполняем словарь(табельный:cумма)
-        for value in data_dict.values():
-            if value not in tabels_dict:
-                tabels_dict[value] = 0
+            # заполняем словарь(табельный:cумма)
+            for value in data_dict.values():
+                if value not in tabels_dict:
+                    tabels_dict[value] = 0
 
-        print("словарь для суммы",tabels_dict)
-        print("табельный замещаемого, часы, день, разряд --- замещающий")
-        print(data_dict)
-        
-        
-
-        for tabel, summ in tabels_dict.items():
-
-            for key,values in data_dict.items():
-                if values == tabel:
-                    money = Summ(key[0])*int(key[1])
-                    summ = tabels_dict[tabel]
-                    tabels_dict[tabel]=summ+money
-        print(tabels_dict)
-
-            
+            print("словарь для суммы",tabels_dict)
+            print("табельный замещаемого, часы, день, разряд --- замещающий")
+            print(data_dict)
             
             
 
-                
-                    
+            for tabel, summ in tabels_dict.items():
 
-                # list_key=list(set(list_key))
-                # print(list_key)
-            
-        #     def summ_tabel(prof):
-        #         if prof == 3:
-        #             money = (int(SETTINGS[self.proffession_number]["cv_three_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day) + (int(SETTINGS[self.proffession_number]["cv_three_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day*cofficient)  
-        #         elif prof == 4:
-        #             money = (int(SETTINGS[self.proffession_number]["cv_four_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day) + (int(SETTINGS[self.proffession_number]["cv_four_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day*cofficient)
-        #         elif prof == 5:
-        #             money = (int(SETTINGS[self.proffession_number]["cv_five_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day) + (int(SETTINGS[self.proffession_number]["cv_five_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day*cofficient)
-        #         elif prof == 6:
-        #             money = (int(SETTINGS[self.proffession_number]["cv_six_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day) + (int(SETTINGS[self.proffession_number]["cv_six_tarif"])*int(SETTINGS[self.proffession_number]["procent_text"])*0.01/day*cofficient)
-        #         return float('{:.2f}'.format(money))
-        #     new_dict = {}
-        #     # Пробегаемся по всем табельным
-        #     for tabel in  self.tabels:
-        #         # создаем для каждого табельного свой список замещающик
-        #         list_tabel = []
-        #         # создаем для каждого табельного словарь(замещающий: сумма)
-        #         new_dict ={}
-        #         # пробегаемся по значениям (ТАБЕЛЬНЫЙ, дата): табельный замещающего
-        #         for Key, Value in data_dict.items():
-        #             # Проверяем если табельные совпадают
-        #             if Key[0] == tabel:
-        #                 # задаем разряд
-        #                 prof = self.tabels[tabel]["разряд"]
-        #                 # задаем сумму для данного разряда
-        #                 money = summ_tabel(prof)
-        #                 # Добавляем в список табельный
-        #                 list_tabel.append(Value)
-        #                 # Создаем словарь (Табельный, сколько раз повторяется)
-        #                 c = Counter(list_tabel)
-        #                 new_dict ={}
-        #                 for key,value in dict(c).items():
-        #                     new_dict[Key[0],key] =int(value)*money
-        #                 # print(new_dict)
-        #         if new_dict == {}:
-        #             continue
-        #         else:
-        #             payment_list.append(new_dict)
-
-                        
-                            
-        #                         # if new_dict not in payment_list:
-        #                         #     payment_list.append(new_dict)
-        #         # print(new_dict)
-        #         # print(dict(c))
-        #         # print(payment_list)
-            
-        # # except:
-        #     # print(f'[INFO] -в блоке SUMM_PAY- {Exception}')
-
-                  
+                for key,values in data_dict.items():
+                    if values == tabel:
+                        money = Summ(key[0])*int(key[2])
+                        summ = tabels_dict[tabel]
+                        tabels_dict[tabel]=summ+money
+            print(tabels_dict)
+      
     def parameters(self):
         #Задаем параметры таблицы
         self.data_table_view.setModel(self.model)
