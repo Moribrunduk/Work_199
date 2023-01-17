@@ -2,9 +2,8 @@
 import sys
 import os
 from PyQt5 import QtCore
-from PyQt5.QtCore import QSettings
 from PyQt5.QtGui import QStandardItemModel,QStandardItem,QColor
-from PyQt5.QtWidgets import QWidget,QHBoxLayout,QTableView,QApplication,QPushButton,QGridLayout,QMainWindow,QVBoxLayout
+from PyQt5.QtWidgets import QWidget,QHBoxLayout,QTableView,QApplication,QPushButton,QGridLayout,QMainWindow,QVBoxLayout,QHeaderView
 import json
 import configparser
 from collections import Counter
@@ -21,11 +20,19 @@ class MAIN_WORK_TABLE(QWidget):
         self.initUI()
         
     def initUI(self):
+
         self.setWindowTitle("Расчет 199 премии")
         self.resize(500,300)
+        # таблица с рабочим полем
         self.model = QStandardItemModel()
         self.data_table_view = QTableView()
         self.data_table_view.setModel(self.model)
+        
+        # таблица с суммами
+        self.model_summ = QStandardItemModel()
+        self.summ_table_view = QTableView()
+        self.summ_table_view.setModel(self.model_summ)
+
 
         self.top_layout = QGridLayout()
         self.main_layout = QVBoxLayout()
@@ -37,8 +44,8 @@ class MAIN_WORK_TABLE(QWidget):
         self.button2.clicked.connect(self.ButtonActionChangeFile)
         self.button2.clicked.connect(self.ChangeFile)
 
-
         self.top_layout.addWidget(self.data_table_view,0,0)
+        self.top_layout.addWidget(self.summ_table_view,0,1)
         self.Button_layout.addWidget(self.button)
         self.Button_layout.addWidget(self.button2)
 
@@ -50,17 +57,22 @@ class MAIN_WORK_TABLE(QWidget):
         self.save_input_user_for_load_in_file = {}
         self.save_input_user_for_summ_in_file = {}
         
+
         SETTINGS = configparser.ConfigParser()
         SETTINGS.read("data/SETTINGS.ini", encoding="utf-8")
         current_path = SETTINGS["Settings"][f"current_directory_{self.proffession_number}"]
         with open(f"{current_path}", "r", encoding="utf-8") as file:
              self.all_data = json.load(file)
         self.tabels = self.all_data["шифр"][self.proffession_number]["Табельный"]
-        self.add_data()
-        self.add_replace_cell()
+
+        self.AddDataToDataTable()
+        self.AddDataToSummTable()
+        self.AddReplaceCell_DataTable()
         self.load_data()
-        self.parameters()
+        self.ParametersDataTable()
+        self.ParametersSummTable()
         self.summ_pay()
+        self.PrintSumm()
     
     def ButtonAction(self):
         self.CE = CREATE_EXCELL(self.proffession_number)
@@ -89,10 +101,9 @@ class MAIN_WORK_TABLE(QWidget):
         print(status)
         
 
-    def add_data(self):
+    def AddDataToDataTable(self):
 
         #ДОБАВЯЕМ РАБОЧИЙ КАЛЕНДАРЬ
-        #TODO
         x = 0
         work_column=3
         for data in range(1,33):
@@ -101,6 +112,7 @@ class MAIN_WORK_TABLE(QWidget):
                 #делаем его нередактируемым
                 item.setEditable(False)
                 self.model.setItem(x, work_column, item)
+                
                 work_column+=1
             elif data == 16 :
                 item = QStandardItem("-")
@@ -113,7 +125,8 @@ class MAIN_WORK_TABLE(QWidget):
                 self.model.setItem(x+1, work_column-16, item)
                 work_column+=1
         
-        # ДОБАВЛЯЕМ ПОЧАСОВОЙ КАЛЕНДАРЬ
+# ДОБАВЛЯЕМ ПОЧАСОВОЙ КАЛЕНДАРЬ
+        
         self.time_calendar = self.all_data["шифр"][self.proffession_number]["Рабочий календарь"]
 
         x = 0
@@ -124,6 +137,11 @@ class MAIN_WORK_TABLE(QWidget):
                 #делаем его нередактируемым
                 item.setEditable(False)
                 self.model.setItem(x, work_column, item)
+                # окрашиваем выходные в красный
+                if value == "-":
+                    self.model.item(x, work_column).setBackground(QColor(255,0,0))
+                else:
+                    self.model.item(x, work_column).setBackground(QColor(255,255,153))
                 work_column+=1
             # т.к 16 колонка в календаре не используется добавляем туда прочерк
             # а значение добавляем вс ледующую строку сначала
@@ -135,11 +153,20 @@ class MAIN_WORK_TABLE(QWidget):
                 item = QStandardItem(str(value))
                 item.setEditable(False)
                 self.model.setItem(x+1, work_column-16, item)
+                if value == "-":
+                    self.model.item(x+1, work_column-16).setBackground(QColor(255,0,0))
+                else:
+                    self.model.item(x+1, work_column-16).setBackground(QColor(255,255,153))
                 work_column+=1
             else:
                 item = QStandardItem(str(value))
                 item.setEditable(False)
                 self.model.setItem(x+1, work_column-16, item)
+
+                if value == "-":
+                    self.model.item(x+1, work_column-16).setBackground(QColor(255,0,0))
+                else:
+                    self.model.item(x+1, work_column-16).setBackground(QColor(255,255,153))
                 work_column+=1
             
 
@@ -154,6 +181,7 @@ class MAIN_WORK_TABLE(QWidget):
             #делаем его нередактируемым
             self.model.setItem(x, work_column, item)
             x=x+2
+       
         # ДОБАВЛЯЕМ ТАБЕЛЬНЫЕ
 
         x=1+1
@@ -229,9 +257,28 @@ class MAIN_WORK_TABLE(QWidget):
                 item.setEditable(False)
                 item.setBackground(QColor(192,192,192))
                 self.model.setItem(x, y+work_column, item)
+    
+    def AddDataToSummTable(self):
+        # добавляем ячейки с фамилией и нулевой суммой
+
+        work_row = 0
+        work_column = 0
+        
+        for tabel in self.tabels.keys():
+            number = QStandardItem(str(tabel))
+            name = QStandardItem(f'{self.tabels[tabel]["фамилия"]} {self.tabels[tabel]["инициалы"]}')
+            nul = QStandardItem("           0.00")
+            number.setEditable(False)
+            name.setEditable(False)
+            self.model_summ.setItem(work_row, work_column, number)
+            self.model_summ.setItem(work_row, work_column+1, name)
+            self.model_summ.setItem(work_row, work_column+2, nul)
+            work_row+=1
+        
+        
         
 
-    def add_replace_cell(self):
+    def AddReplaceCell_DataTable(self):
         # РАСКРАШИВАЕМ ЯЧЕЙКИ ТАБЛИЦЫ ГДЕ МОЖНО ДАТЬ ЗАМЕЩЕНИЕ
 
         # НАЧАЛЬНАЯ КОЛОНКа # TODO сделать чтобы она изменялась по всему документу
@@ -403,15 +450,13 @@ class MAIN_WORK_TABLE(QWidget):
 
         INPUT_TEMP = configparser.ConfigParser()
         INPUT_TEMP.read(SETTINGS_TEMP_PATH, encoding="utf-8")
-        payment_list = []
-        list_tabel = []
 
         # загружаем данные из джсон
         with open(f'{SETTINGS_JSON_PATH}', "r", encoding="utf-8") as file:
             all_data = json.load(file)
         # количество рабочих часов
         hours = all_data["шифр"][self.proffession_number]["Информация"]["рабочих_часов"]
-        print(hours)
+        # print(hours)
 
 
         # применям коэффициенты вредности
@@ -436,12 +481,12 @@ class MAIN_WORK_TABLE(QWidget):
 
             
             data_dict = eval(data_dict)
-            print("----словарь_с_данными для суммы-----")
+            # print("----словарь_с_данными для суммы-----")
             
 
             def Summ(personal_number):
                 level = all_data["шифр"][self.proffession_number]["Табельный"][personal_number]["разряд"]
-                print(level)
+                # print(level)
                 if level == 3:
                     # тариф
                     tarif = int(SETTINGS[self.proffession_number]["cv_three_tarif"])
@@ -460,7 +505,7 @@ class MAIN_WORK_TABLE(QWidget):
                     tarif = int(SETTINGS[self.proffession_number]["cv_six_tarif"])
                     money_per_hours = (tarif/hours)*self.coefficient
                     money_per_hours_in_harmfullness = money_per_hours+money_per_hours*self.harmfulness
-                print(float('{:.2f}'.format(money_per_hours_in_harmfullness)))
+                # print(float('{:.2f}'.format(money_per_hours_in_harmfullness)))
                 return float('{:.2f}'.format(money_per_hours_in_harmfullness))
 
 
@@ -469,12 +514,7 @@ class MAIN_WORK_TABLE(QWidget):
                 if value not in tabels_dict:
                     tabels_dict[value] = 0
 
-            print("словарь для суммы",tabels_dict)
-            print("табельный замещаемого, часы, день, разряд --- замещающий")
-            print(data_dict)
             
-            
-
             for tabel, summ in tabels_dict.items():
 
                 for key,values in data_dict.items():
@@ -482,18 +522,63 @@ class MAIN_WORK_TABLE(QWidget):
                         money = Summ(key[0])*int(key[2])
                         summ = tabels_dict[tabel]
                         tabels_dict[tabel]=summ+money
-            print(tabels_dict)
+            # print(tabels_dict)
+            return(tabels_dict)
+    
+    def PrintSumm(self):
+        x = self.summ_pay()
+        count = 0
+        for tabel in self.tabels.keys():
+            for key,value in x.items():
+                if int(key)==int(tabel):
+                    rub = QStandardItem("{:.2f}".format(value))
+                    rub.setEditable(False)
+                    self.model_summ.setItem(count, 2, rub)
+            count+=1
+            
+
+            
+
+
+            
+
       
-    def parameters(self):
+    def ParametersDataTable(self):
         #Задаем параметры таблицы
-        self.data_table_view.setModel(self.model)
         # self.data_table_view.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
         self.data_table_view.horizontalHeader().setMinimumSectionSize(30)
         self.data_table_view.resizeColumnsToContents()
+
+        # убираем нумерацию строк и столбцов
+        self.data_table_view.verticalHeader().setVisible(False)
+        self.data_table_view.horizontalHeader().setVisible(False)
+
+
         #Показывае данные при изменении в ячейке
         self.model.itemChanged.connect(self.input_user_color_and_save)
         self.model.itemChanged.connect(self.summ_pay)
-        self.top_layout.addWidget(self.data_table_view)
+        #При изменении в левой таблице итемов, вносим сумму в правую таблицу
+        self.model.itemChanged.connect(self.PrintSumm)
+    
+    def ParametersSummTable(self):
+        #Задаем параметры таблицы
+        self.summ_table_view.horizontalHeader().setMinimumSectionSize(30)
+        self.summ_table_view.resizeColumnsToContents()
+        
+        # Считаем ширину таблицы
+        vwidth = self.summ_table_view.verticalHeader().width()
+        hwidth = self.summ_table_view.horizontalHeader().length()
+        fwidth = self.summ_table_view.frameWidth() * 2
+        scrollBarHeight = self.summ_table_view.horizontalScrollBar().height()
+        self.summ_table_view.setFixedWidth(vwidth + hwidth + fwidth + scrollBarHeight)
+        self.summ_table_view.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+
+        # убираем нумерацию строк и столбцов
+        self.summ_table_view.verticalHeader().setVisible(False)
+        self.summ_table_view.horizontalHeader().setVisible(False)
+
+        
+
     
     
         
