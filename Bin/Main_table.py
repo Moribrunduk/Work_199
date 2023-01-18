@@ -156,7 +156,7 @@ class MAIN_WORK_TABLE(QWidget):
                 if value == "-":
                     self.model.item(x+1, work_column-16).setBackground(QColor(255,0,0))
                 else:
-                    self.model.item(x+1, work_column-16).setBackground(QColor(255,255,153))
+                    self.model.item(x+1, work_column-16).setBackground(QColor(255,255,208))
                 work_column+=1
             else:
                 item = QStandardItem(str(value))
@@ -167,9 +167,11 @@ class MAIN_WORK_TABLE(QWidget):
                     self.model.item(x+1, work_column-16).setBackground(QColor(255,0,0))
                 else:
                     self.model.item(x+1, work_column-16).setBackground(QColor(255,255,153))
+                    
                 work_column+=1
             
 
+                    
 
         # добавляем коряво ячейки TODO
         x=1+1

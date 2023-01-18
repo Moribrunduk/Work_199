@@ -76,7 +76,17 @@ class Avtorisation_widow(QWidget):
 
         self.setFixedSize(300,110)
         self.setLayout(self.layout)
+
+        self.GodVerificztion()
+        
         self.show()
+    
+    def GodVerificztion(self):
+        status = "true"
+        if status == False:
+            self.god_verificztion = QLabel("Нет верификации")
+            self.layout.addWidget(self.god_verificztion,3,0)
+
     
 
     def exit_prog(self):
