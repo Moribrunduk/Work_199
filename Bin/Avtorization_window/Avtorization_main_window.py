@@ -2,6 +2,9 @@ import sys
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import QGridLayout, QLabel,QLineEdit,QPushButton,QWidget, QApplication, QMessageBox,QShortcut
 from PyQt5.QtCore import QSettings,QCoreApplication
+# sys.path.insert(1,"Bin")
+sys.path.append("Bin")
+from Content import MAIN_WINDOW
 
 
 
@@ -24,6 +27,7 @@ class AVTORIZATION_WINDOW(QWidget):
         self.text_name.setFixedHeight(20)
         self.text_password = QLineEdit()
         self.text_password.setFixedHeight(20)
+        self.text_password.setEchoMode(QLineEdit.Password)
         
         self.button_ok = QPushButton("ОК")
         self.button_ok.setFixedHeight(20)
@@ -52,7 +56,6 @@ class AVTORIZATION_WINDOW(QWidget):
 
     def Main(self):
         self.Qset()
-        self.GodVerificztion()
         self.show()
     
     def Qset(self):
@@ -60,34 +63,6 @@ class AVTORIZATION_WINDOW(QWidget):
         self.settings.beginGroup("GOD_parameters")
         self.settings.setValue("Password", "19921128Qe")
         self.settings.endGroup()
-    
-    
-        
-    
-    def GodVerificztion(self):
-
-        status = False
-        if status == False:
-            self.god_verificztion = QLabel("Нет верификации")
-            self.layout.addWidget(self.god_verificztion,5,4)
-        if status == True:
-            self.god_verificztion = QLabel("Верифицировано")
-            self.layout.addWidget(self.god_verificztion,5,4)
-        
-        return status
-    
-    # def on_open(self):
-        
-    #     self.god_label_password = QLabel("Пароль  ")
-    #     self.god_text_password = QLineEdit()
-    #     self.god_text_password.setFixedHeight(20)
-    #     self.layout.addWidget(self.god_label_password,4,0,1,4)
-    #     self.layout.addWidget(self.god_text_password,4,1,1,4)
-    #     self.god_ok_button = 
-    #     self.setFixedSize(320,155)
-    #     print('sdfds')
-
-
     
     def Verification(self):
         self.settings.beginGroup("Users")
@@ -104,12 +79,10 @@ class AVTORIZATION_WINDOW(QWidget):
         elif control_name != password:
             QMessageBox.warning(
                 self, 'Ошибка', 'Ошибка: неверный пароль')
-        elif self.GodVerificztion() == False:
-             QMessageBox.warning(
-                self, 'Ошибка', 'Ошибка: Права пользователя не подтверждены')
         else:
-            print("удача")
 
+            self.MW = MAIN_WINDOW()
+            self.close()
         self.settings.endGroup()
         
 
@@ -136,7 +109,9 @@ class CREATE_NEW_USER(QWidget):
         self.label_password = QLabel("Пароль")
         self.text_name = QLineEdit()
         self.text_password = QLineEdit()
+        self.text_password.setEchoMode(QLineEdit.Password)
         self.text_control_password = QLineEdit()
+        self.text_control_password.setEchoMode(QLineEdit.Password)
         
         self.button_ok = QPushButton("ОК")
         self.button_ok.setFixedHeight(20)
@@ -174,6 +149,7 @@ class CREATE_NEW_USER(QWidget):
     def ShowGodVerification(self):
         self.god_label_password = QLabel("Пароль  ")
         self.god_text_password = QLineEdit()
+        self.god_text_password.setEchoMode(QLineEdit.Password)
         self.god_text_password.setFixedHeight(20)
         self.layout.addWidget(self.god_label_password,4,0,1,4)
         self.layout.addWidget(self.god_text_password,4,1,1,4)

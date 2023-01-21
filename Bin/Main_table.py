@@ -94,6 +94,7 @@ class MAIN_WORK_TABLE(QWidget):
         self.CHP = Change_profession(self.proffession_number)
         self.CHP.show()
         self.CHP.OK_button.clicked.connect(self.Restart)
+        
     
     def Restart(self):
         QtCore.QCoreApplication.quit()
@@ -103,7 +104,7 @@ class MAIN_WORK_TABLE(QWidget):
 
     def AddDataToDataTable(self):
 
-        #ДОБАВЯЕМ РАБОЧИЙ КАЛЕНДАРЬ
+#ДОБАВЯЕМ РАБОЧИЙ КАЛЕНДАРЬ
         x = 0
         work_column=3
         for data in range(1,33):
@@ -112,36 +113,40 @@ class MAIN_WORK_TABLE(QWidget):
                 #делаем его нередактируемым
                 item.setEditable(False)
                 self.model.setItem(x, work_column, item)
-                
                 work_column+=1
+
             elif data == 16 :
                 item = QStandardItem("-")
                 item.setEditable(False)
                 self.model.setItem(x, work_column, item)
                 work_column+=1
+                
             else:
                 item = QStandardItem(str(data-1))
                 item.setEditable(False)
                 self.model.setItem(x+1, work_column-16, item)
                 work_column+=1
         
-# ДОБАВЛЯЕМ ПОЧАСОВОЙ КАЛЕНДАРЬ
+# ДОБАВЛЯЕМ ПОЧАСОВОЙ КАЛЕНДАРЬ(РАБОЧИЙ ГРАФИК)
+        # первое значение бэкграунда - окрашиваем календарь почасовой
+        # второй значение бэкграунда - окрашиваем дневной календарь
         
         self.time_calendar = self.all_data["шифр"][self.proffession_number]["Рабочий календарь"]
-
         x = 0
         work_column=19
         for i,value in enumerate(self.time_calendar.values()):
             if i <15:
                 item = QStandardItem(str(value))
-                #делаем его нередактируемым
                 item.setEditable(False)
                 self.model.setItem(x, work_column, item)
                 # окрашиваем выходные в красный
                 if value == "-":
-                    self.model.item(x, work_column).setBackground(QColor(255,0,0))
+                    self.model.item(x, work_column).setBackground(QColor(200,20,0))
+                    self.model.item(x, work_column-16).setBackground(QColor(200,20,0))
+
                 else:
-                    self.model.item(x, work_column).setBackground(QColor(255,255,153))
+                    self.model.item(x, work_column).setBackground(QColor(255,255,208))
+                    self.model.item(x, work_column-16).setBackground(QColor(255,255,208))
                 work_column+=1
             # т.к 16 колонка в календаре не используется добавляем туда прочерк
             # а значение добавляем вс ледующую строку сначала
@@ -154,62 +159,75 @@ class MAIN_WORK_TABLE(QWidget):
                 item.setEditable(False)
                 self.model.setItem(x+1, work_column-16, item)
                 if value == "-":
-                    self.model.item(x+1, work_column-16).setBackground(QColor(255,0,0))
+                    self.model.item(x+1, work_column-16).setBackground(QColor(200,20,0))
+                    self.model.item(x+1, work_column-32).setBackground(QColor(200,20,0))
                 else:
                     self.model.item(x+1, work_column-16).setBackground(QColor(255,255,208))
+                    self.model.item(x+1, work_column-32).setBackground(QColor(255,255,208))
                 work_column+=1
             else:
                 item = QStandardItem(str(value))
                 item.setEditable(False)
                 self.model.setItem(x+1, work_column-16, item)
-
                 if value == "-":
-                    self.model.item(x+1, work_column-16).setBackground(QColor(255,0,0))
+                    self.model.item(x+1, work_column-16).setBackground(QColor(200,20,0))
+                    self.model.item(x+1, work_column-32).setBackground(QColor(200,20,0))
                 else:
-                    self.model.item(x+1, work_column-16).setBackground(QColor(255,255,153))
-                    
+                    self.model.item(x+1, work_column-16).setBackground(QColor(255,255,208))
+                    self.model.item(x+1, work_column-32).setBackground(QColor(255,255,208))
                 work_column+=1
-            
 
-                    
+# ДОБАВЛЯЕМ ЯЧЕЙКИ(КОРЯВО)
 
-        # добавляем коряво ячейки TODO
         x=1+1
         work_column =0
-        #задаем начальный столбец
         for tabel in self.tabels:
-            #создаем итем
             item = QStandardItem("")
-            #делаем его нередактируемым
             self.model.setItem(x, work_column, item)
             x=x+2
        
-        # ДОБАВЛЯЕМ ТАБЕЛЬНЫЕ
+# ДОБАВЛЯЕМ ТАБЕЛЬНЫЕ
 
+    # заполняем данные
         x=1+1
         work_column =0
-        #задаем начальный столбец
         for tabel in self.tabels:
-            #создаем итем
             item = QStandardItem(tabel)
-            #делаем его нередактируемым
             item.setEditable(False)
             self.model.setItem(x, work_column, item)
             self.data_table_view.setSpan(x,work_column,2,1)
             x=x+2
+        
+    # окрашиваем ячейки
+        x=1+1
+        try:
+            for tabel in self.tabels:
+                if x % 2 == 0:
+                    self.model.item(x, work_column).setBackground(QColor(255,255,208))
+                    x=x+4
+        except: AttributeError 
 
         work_column+=1
         
         
-        # ДОБАВЛЯЕМ ФАМИЛИИ
+# ДОБАВЛЯЕМ ФАМИЛИИ
         x = 1+1
         for tabel in self.tabels:
             item = QStandardItem(self.tabels[tabel]["фамилия"])
             item.setEditable(False)
             self.model.setItem(x, work_column, item)
             x=x+2
+        
+        x=1+1
+        try:
+            for tabel in self.tabels:
+                if x % 2 == 0:
+                    self.model.item(x, work_column).setBackground(QColor(255,255,208))
+                    x=x+4
+        except: AttributeError 
 
-        # ДОБАВЛЯЕМ ИНИЦИАЛЫ
+# ДОБАВЛЯЕМ ИНИЦИАЛЫ
+
         x = 2+1
         for tabel in self.tabels:
             item = QStandardItem(self.tabels[tabel]["инициалы"])
@@ -217,9 +235,17 @@ class MAIN_WORK_TABLE(QWidget):
             self.model.setItem(x, work_column, item)
             x=x+2
         
+        x = 2+1
+        try:
+            for tabel in self.tabels:
+                if x % 1 == 0:
+                    self.model.item(x, work_column).setBackground(QColor(255,255,208))
+                    x=x+4
+        except: AttributeError 
+        
         work_column+=1
 
-        # ДОБАВЛЯЕМ РАЗРЯДЫ
+# ДОБАВЛЯЕМ РАЗРЯДЫ
 
         x = 1+1
         for tabel in self.tabels:
@@ -229,10 +255,19 @@ class MAIN_WORK_TABLE(QWidget):
             self.data_table_view.setSpan(x,work_column,2,1)
             x=x+2
         
+        x = 1+1
+
+        try:
+            for tabel in self.tabels:
+                if x % 2 == 0:
+                    self.model.item(x, work_column).setBackground(QColor(255,255,208))
+                    x=x+4
+        except: AttributeError 
+
         work_column+=1
 
 
-        # ДОБАВЛЯЕМ ГРАФИК ОТРАБОТАННЫХ СМЕН
+# ДОБАВЛЯЕМ ГРАФИК ОТРАБОТАННЫХ СМЕН
         x = 1+1
         for tabel in self.tabels:
             for day in range(0,len(self.tabels[tabel]["отработанные смены"])):
@@ -246,9 +281,20 @@ class MAIN_WORK_TABLE(QWidget):
                     self.model.setItem(x+1, day+work_column-16, item)
             x=x+2
         
+        x = 1+1
+        try:
+            for tabel in self.tabels:
+                for day in range(0,len(self.tabels[tabel]["отработанные смены"])):
+                    if day<16:
+                        self.model.item(x, day+work_column).setBackground(QColor(204,204,204))
+                    else:
+                        self.model.item(x+1, day+work_column-16).setBackground(QColor(204,204,204))
+                x=x+4
+        except: AttributeError
+        
         work_column+=16
 
-        # ДОБАВЛЯЕМ ЯЧЕЙКИ В КОТОРЫЕ БУДЕМ ЗАНОСИТЬ ТАБЕЛЬНЫЕ ЗАМЕЩАЮЩИХ(рабочая часть с правой стороны)
+# ДОБАВЛЯЕМ ЯЧЕЙКИ В КОТОРЫЕ БУДЕМ ЗАНОСИТЬ ТАБЕЛЬНЫЕ ЗАМЕЩАЮЩИХ(рабочая часть с правой стороны)
         
         x = 1+1
         work_row = x
@@ -257,9 +303,37 @@ class MAIN_WORK_TABLE(QWidget):
                 item = QStandardItem(None)
                 # делаем их все нередактируемые и заполняем цветом
                 item.setEditable(False)
-                item.setBackground(QColor(192,192,192))
                 self.model.setItem(x, y+work_column, item)
-    
+        
+        for x in range(work_row,len(self.tabels)*2+work_row,4):
+            for y in range(0,16):
+                self.model.item(x, y+work_column).setBackground(QColor(204,204,204))
+                self.model.item(x+1, y+work_column).setBackground(QColor(204,204,204))
+
+# ЗАДАЕМ БЭКГРАУНД ЯЧЕЙКАМ С ВЫХОДНЫМИ
+
+        self.time_calendar = self.all_data["шифр"][self.proffession_number]["Рабочий календарь"]
+        work_row = 2
+        work_column = 3
+        for x in range(work_row,len(self.tabels)*2+work_row,2):
+            work_column = 3
+            for i,value in enumerate(self.time_calendar.values()):
+                if i <15:
+                    print(value)
+                    try:
+                        if value == "-":
+                            print("jkj")
+                            self.model.item(x, work_column+i).setBackground(QColor(200,100,100))
+                            self.model.item(x, work_column+16+i).setBackground(QColor(200,100,100))
+                    except: AttributeError
+                elif i>15:
+                    try:
+                        if value == "-":
+                            print("jkj")
+                            self.model.item(x+1, work_column-16+i+1).setBackground(QColor(200,100,100))
+                            self.model.item(x+1, work_column+i+1).setBackground(QColor(200,100,100))
+                    except: AttributeError
+        
     def AddDataToSummTable(self):
         # добавляем ячейки с фамилией и нулевой суммой
 
@@ -277,9 +351,6 @@ class MAIN_WORK_TABLE(QWidget):
             self.model_summ.setItem(work_row, work_column+2, nul)
             work_row+=1
         
-        
-        
-
     def AddReplaceCell_DataTable(self):
         # РАСКРАШИВАЕМ ЯЧЕЙКИ ТАБЛИЦЫ ГДЕ МОЖНО ДАТЬ ЗАМЕЩЕНИЕ
 
@@ -304,7 +375,6 @@ class MAIN_WORK_TABLE(QWidget):
                         item.setBackground(QColor(0,128,128))
                         self.model.setItem(x+1, day+work_column-16,item)
             x=x+2
-
 
     def input_user_color_and_save(self):
         
@@ -421,7 +491,6 @@ class MAIN_WORK_TABLE(QWidget):
         with open(f'{self.year}\\{self.month}\\data\\{self.proffession_number}_input.ini', "w", encoding="utf-8") as configfile:
             self.TEMP.write(configfile)
 
-
     def load_data(self):
         try:
             self.year=self.all_data["шифр"][self.proffession_number]["Информация"]["год"]
@@ -442,7 +511,6 @@ class MAIN_WORK_TABLE(QWidget):
         except:
             print("НЕТ ФАЙЛА")
         
-
     def summ_pay(self):
         # загружаем данные из файла с настройками
         SETTINGS = configparser.ConfigParser()
@@ -528,23 +596,20 @@ class MAIN_WORK_TABLE(QWidget):
             return(tabels_dict)
     
     def PrintSumm(self):
+        
         x = self.summ_pay()
-        count = 0
-        for tabel in self.tabels.keys():
-            for key,value in x.items():
-                if int(key)==int(tabel):
-                    rub = QStandardItem("{:.2f}".format(value))
-                    rub.setEditable(False)
-                    self.model_summ.setItem(count, 2, rub)
-            count+=1
-            
-
-            
-
-
-            
-
-      
+        if x == None:
+            print("нет файла")
+        else:
+            count = 0
+            for tabel in self.tabels.keys():
+                for key,value in x.items():
+                    if int(key)==int(tabel):
+                        rub = QStandardItem("{:.2f}".format(value))
+                        rub.setEditable(False)
+                        self.model_summ.setItem(count, 2, rub)
+                count+=1
+              
     def ParametersDataTable(self):
         #Задаем параметры таблицы
         # self.data_table_view.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
@@ -580,11 +645,7 @@ class MAIN_WORK_TABLE(QWidget):
         self.summ_table_view.horizontalHeader().setVisible(False)
 
         
-
-    
-    
-        
-        
+   
     
 if __name__ == '__main__':
     app = QApplication(sys.argv)

@@ -6,9 +6,11 @@ from PyQt5.QtWidgets import QWidget, QApplication,QLabel,QGridLayout,QPushButton
 from PyQt5.QtGui import  QPixmap
 from PyQt5.QtCore import Qt, QTimer 
 sys.path.insert(1,"Bin")
+sys.path.insert(2,"Bin\Avtorization_window")
 
 from Bin.Content import MAIN_WINDOW
 from Bin.Create_settings_defoult_file import CREATE_SETTINGS_DEFAULT
+from Bin.Avtorization_window.Avtorization_main_window import AVTORIZATION_WINDOW
 
 
 class Start_picture(QWidget):
@@ -41,8 +43,8 @@ class Start_picture(QWidget):
     
     def show_avtorisation_widow(self):
         self.timer_close.stop()
-        self.AV = Avtorisation_widow()
-        self.AV.show()
+        self.AW = AVTORIZATION_WINDOW()
+        self.AW.show()
 
 class Avtorisation_widow(QWidget):
     def __init__(self):
