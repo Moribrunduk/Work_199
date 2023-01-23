@@ -52,7 +52,6 @@ class CREATE_FILE():
 
         self.tabels = self.all_data["шифр"][str(self.profession_number)]["Табельный"]
         
-
     def ReasonBlock(self,tabel_for_function):
         # проверяем если нет смен отсутствия, сразу создаем список на выход
         if self.tabels[tabel_for_function]["Пропущенные смены"] == []:
@@ -60,33 +59,67 @@ class CREATE_FILE():
             
         else:
             self.missed_working_days = list(self.tabels[tabel_for_function]["Причина пропуска смен"].keys())
-            # print(self.missed_working_days)
+            print(self.missed_working_days)
             self.reasons = list(self.tabels[tabel_for_function]["Причина пропуска смен"].values())
-            # print(self.reasons)
-
-            ferst_day = self.missed_working_days[0]
-            last_day = ferst_day
+            # убираем лишнее из причины отсутствия()
+            self.new_missed_working_days = []
+            self.new_reasons = []
+            # задае общее число эдементов с отсчетом с 0
             count = 0
-            reason_list_x = [()]
-            main_reason = self.reasons[0]
-            for i,reason in enumerate(self.reasons):
-
-                # print(f"{main_reason}-------{reason}")
-
-                if main_reason == reason:
-                    last_day = self.missed_working_days[i]
-                    reason_list_x[count]=(ferst_day,last_day,reason)
+            for i,item in enumerate(self.reasons):
+                if str(item) in self.SETINGS["Days"]["days_keys"]:
+                    self.new_reasons.append(item)
+                elif str(item)[1:3] in ("МН","мн","МВ","мв","МД","мд","м","М"):
+                    self.new_reasons.append("ИО")
+                elif int(str(item)[0]) not in range(0,8):
+                    self.new_reasons.append(int(str(item)[0]))  
                 else:
-                    ferst_day = self.missed_working_days[i]
-                    last_day = ferst_day
-                    reason_list_x.append("")
-                    main_reason=reason
-                    count+=1
-                    reason_list_x[count]=(ferst_day,last_day,reason)
-                    
-        
-        # print(tabel_for_function,reason_list_x)
-        return reason_list_x
+                    self.missed_working_days.pop(count+i)
+                    count-=1
+
+                               
+            self.reasons = self.new_reasons
+            print(self.missed_working_days)
+
+############################################
+
+            if self.reasons == []:
+                reason_list_x = []
+            else:
+                # print(self.reasons)
+                ferst_day = self.missed_working_days[0]
+                last_day = ferst_day
+                count = 0
+                reason_list_x = [()]
+                main_reason = self.reasons[0]
+                for i,reason in enumerate(self.reasons):
+                    try:
+                        if main_reason == reason:
+                            print(f"{int(last_day)+1}----{int(self.missed_working_days[i+1])}")
+                            if int(last_day)+1 == int(self.missed_working_days[i+1]):
+                                last_day = self.missed_working_days[i+1]
+                                reason_list_x[count]=(ferst_day,last_day,reason)
+                            else:
+                                ferst_day = self.missed_working_days[i+1]
+                                last_day = ferst_day
+                                reason_list_x.append("")
+                                main_reason=reason
+                                count+=1
+                                reason_list_x[count]=(ferst_day,last_day,reason)
+
+                        else:
+                            ferst_day = self.missed_working_days[i]
+                            last_day = ferst_day
+                            reason_list_x.append("")
+                            main_reason=reason
+                            count+=1
+                            reason_list_x[count]=(ferst_day,last_day,reason)
+                
+                    except: Exception
+                        
+            print(reason_list_x)
+            print(tabel_for_function,reason_list_x)
+            return reason_list_x
 
     def UserRework(self,tabel_for_function):
         """
@@ -105,12 +138,12 @@ class CREATE_FILE():
 
         # задаем начальный день, когда первый раз идет замещение
         data_x = int(list(list_of_user_input.keys())[0][1])
-        print(data_x)
+        # print(data_x)
         
         
         # Приравниваем конечный день, к начальному, чтобы изменять в дальнейшем
         data_z = int(data_x)
-        print(data_z)
+        # print(data_z)
         # создаем лист замещения
         remoove_day_list = [()]
         item_namber = 0
@@ -122,8 +155,8 @@ class CREATE_FILE():
         for day in range(1,32):
             # если ключа (табельный, день) нет в словаре
             if (personal_number,str(day)) not in list_of_user_input:
-                print((personal_number,str(day)))
-                print(list_of_user_input)
+                # print((personal_number,str(day)))
+                # print(list_of_user_input)
                 # добавляем такой ключ со значением "-"
                 list_of_user_input_selected_number[personal_number,str(day)] = "-"
             else:
@@ -167,10 +200,10 @@ class CREATE_FILE():
     def WriteInFile(self,tabel_for_function):
         #список содержаший (первый день отсутсвия, последнйи,причина отсутствия)
         reasons = self.ReasonBlock(tabel_for_function)
-        print(reasons)
+        # print(reasons)
         #список содержащий(первй день замещения, последний день замещения, табельный замещающего)
         rework = self.UserRework(tabel_for_function)
-        print(rework)
+        # print(rework)
         if reasons ==[]:
             final_list=[]
         elif rework ==[]:
@@ -196,16 +229,20 @@ class CREATE_FILE():
                     # проверяем изменился ли табельный
                     if tabel_number == int(item[2]):
                         # проверяем входят ли дни когда этот табельный замещает, в причину замещения
-                        if int(reason[0])<=int(item[0])<=int(item[1])<=int(reason[1]):
+                        if int(reason[0])<=int(item[0])<=int(item[1])<=int(reason[1]): 
+                            print(f"{item} входит в {reason}")
                             # изменяем крайний день замещения
                             Day_z = int(item[1])
                             # заменяем этот элемент в списке на печать
+                            print(tabel_for_function,reason[2],Day_x,Day_z,tabel_number)
+                            
+                            print(count)
                             final_list[count]=(tabel_for_function,reason[2],Day_x,Day_z,tabel_number)
                             print(final_list)
                     # если табельный поменялся
                     else:
                         if int(reason[0])<=int(item[0])<=int(item[1])<=int(reason[1]):
-                            # print(f"{item} входит в {reason}")
+                            print(f"{item} входит в {reason}")
                             # увеличивем количество элементов в списке
                             count+=1
                             # меняем первый день замещения
@@ -219,9 +256,10 @@ class CREATE_FILE():
                             # заполняем это значение списком
                             final_list[count] = (tabel_for_function,reason[2],Day_x,Day_z,tabel_number)
                 reason_count+=1
+                final_list.append("")
             # удаляем из списка пустой элемент("откуда взялся хз")  
-            while "" in final_list:              
-                final_list.remove((""))
+        while "" in final_list:              
+            final_list.remove((""))
         print(final_list)
         
 
@@ -231,21 +269,16 @@ class CREATE_FILE():
 
 
         
-    # def MAIN_FINCTION(self):
-
-    #     for tabel in self.tabels:
-    #         try:
-    #             self.WriteInFile(tabel_for_function=str(tabel))
-    #         except:
-    #             print(f"ошибка в блоке 3[write in file]----{tabel}")  
-
+    
     def MAIN_FINCTION(self):
 
         for tabel in self.tabels:
                 self.WriteInFile(tabel_for_function=str(tabel))
-                # self.ReasonBlock(tabel_for_function=str(tabel))
-        # self.ReasonBlock(tabel_for_function=str(433))
-
+                self.ReasonBlock(tabel_for_function=str(tabel))
+        # tabel =  453
+        # self.ReasonBlock(tabel_for_function=str(tabel))
+        # # self.UserRework(tabel_for_function=str(tabel))
+        # # self.WriteInFile(tabel_for_function=str(tabel))
                 
 if __name__ == '__main__':
         CF = CREATE_FILE("87100")

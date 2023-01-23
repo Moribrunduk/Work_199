@@ -1,7 +1,7 @@
 import sys
-import os
-import time
-import configparser
+import json
+import xlwt
+import xlrd
 from PyQt5.QtWidgets import QWidget, QApplication,QLabel,QGridLayout,QPushButton,QVBoxLayout,QLineEdit,QHBoxLayout
 from PyQt5.QtGui import  QPixmap
 from PyQt5.QtCore import Qt, QTimer 
@@ -82,13 +82,6 @@ class Avtorisation_widow(QWidget):
         self.GodVerificztion()
         
         self.show()
-    
-    def GodVerificztion(self):
-        status = "true"
-        if status == False:
-            self.god_verificztion = QLabel("Нет верификации")
-            self.layout.addWidget(self.god_verificztion,3,0)
-
     
 
     def exit_prog(self):

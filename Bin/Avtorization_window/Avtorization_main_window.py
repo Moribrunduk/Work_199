@@ -130,7 +130,9 @@ class CREATE_NEW_USER(QWidget):
         
         self.layout.addWidget(self.button_ok,3,3,1,1)
         self.layout.addWidget(self.button_exit,3,4,1,1)
-        
+
+       
+
         self.setFixedSize(300,150)
         self.setLayout(self.layout)
 
