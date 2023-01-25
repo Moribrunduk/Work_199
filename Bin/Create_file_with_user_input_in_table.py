@@ -59,7 +59,6 @@ class CREATE_FILE():
             
         else:
             self.missed_working_days = list(self.tabels[tabel_for_function]["Причина пропуска смен"].keys())
-            print(self.missed_working_days)
             self.reasons = list(self.tabels[tabel_for_function]["Причина пропуска смен"].values())
             # убираем лишнее из причины отсутствия()
             self.new_missed_working_days = []
@@ -76,15 +75,16 @@ class CREATE_FILE():
                 else:
                     self.missed_working_days.pop(count+i)
                     count-=1
-
-                               
+                   
             self.reasons = self.new_reasons
-            print(self.missed_working_days)
+            
 
 ############################################
+            
 
             if self.reasons == []:
                 reason_list_x = []
+                return reason_list_x
             else:
                 # print(self.reasons)
                 ferst_day = self.missed_working_days[0]
@@ -95,16 +95,7 @@ class CREATE_FILE():
                 for i,reason in enumerate(self.reasons):
                     try:
                         if main_reason == reason:
-                            print(f"{int(last_day)+1}----{int(self.missed_working_days[i+1])}")
-                            if int(last_day)+1 == int(self.missed_working_days[i+1]):
-                                last_day = self.missed_working_days[i+1]
-                                reason_list_x[count]=(ferst_day,last_day,reason)
-                            else:
-                                ferst_day = self.missed_working_days[i+1]
-                                last_day = ferst_day
-                                reason_list_x.append("")
-                                main_reason=reason
-                                count+=1
+                                last_day = self.missed_working_days[i]
                                 reason_list_x[count]=(ferst_day,last_day,reason)
 
                         else:
@@ -114,13 +105,51 @@ class CREATE_FILE():
                             main_reason=reason
                             count+=1
                             reason_list_x[count]=(ferst_day,last_day,reason)
-                
                     except: Exception
-                        
+                
             print(reason_list_x)
-            print(tabel_for_function,reason_list_x)
-            return reason_list_x
+            print(self.missed_working_days)
+            not_missed_days = []
+            try:
+                for days in range(1,int(self.missed_working_days[-1])+1):
+                        if str(days) not in self.missed_working_days:
+                            not_missed_days.append(days)
+                print(not_missed_days)
+                
 
+                if not_missed_days == []:
+                    return reason_list_x
+                else:
+                    print("kjhjh")
+                
+                count = len(reason_list_x)
+                new_reason_list_x = [()]
+                new_count=0
+                for i,reason in enumerate(reason_list_x):
+                    for days in not_missed_days:
+                        if int(days) in range(int(reason[0]),int(reason[1])+1):
+                            new_reason_list_x[new_count]=(int(reason[0]),days,reason[2])
+                            # new_reason.append(int(reason[0],days,reason[2]))
+                            new_reason_list_x.append("")
+                            new_count+=1
+                            # print(new_reason_list_x)
+                            break
+                        else:
+                            new_reason_list_x[new_count] = reason
+                    new_count+=1
+                    new_reason_list_x.append("")
+
+                    for days in not_missed_days:
+                        if int(days) in range(int(reason[0]),int(reason[1])+1):
+                            new_reason_list_x[new_count]=(days+1,int(reason[1]),reason[2])
+            
+                while "" in new_reason_list_x:
+                    new_reason_list_x.remove("")
+                print(new_reason_list_x)
+            except: IndexError
+            
+            return new_reason_list_x
+                
     def UserRework(self,tabel_for_function):
         """
         функция которая возвращает список (день начала замещения, последний день замещения, табельный замещающего)
@@ -129,6 +158,7 @@ class CREATE_FILE():
         full_list_of_user_input = self.TEMP['General']['for_summ']
         # словарь представлен как {(табельный,число,количество часов,день): замещающий табельный}
         full_list_of_user_input = eval(full_list_of_user_input)
+        
 
         # преобразуем в словарь
         # {(табельный,число): замещающий табельный}
@@ -200,9 +230,11 @@ class CREATE_FILE():
     def WriteInFile(self,tabel_for_function):
         #список содержаший (первый день отсутсвия, последнйи,причина отсутствия)
         reasons = self.ReasonBlock(tabel_for_function)
+        print(reasons)
         # print(reasons)
         #список содержащий(первй день замещения, последний день замещения, табельный замещающего)
         rework = self.UserRework(tabel_for_function)
+        print(rework)
         # print(rework)
         if reasons ==[]:
             final_list=[]
@@ -267,9 +299,6 @@ class CREATE_FILE():
         with open(f'{self.SETINGS_current_path.split(".")[0]}.ini', 'w', encoding="utf-8") as configfile: 
             self.substitutes.write(configfile)   
 
-
-        
-    
     def MAIN_FINCTION(self):
 
         for tabel in self.tabels:
@@ -278,7 +307,7 @@ class CREATE_FILE():
         # tabel =  453
         # self.ReasonBlock(tabel_for_function=str(tabel))
         # # self.UserRework(tabel_for_function=str(tabel))
-        # # self.WriteInFile(tabel_for_function=str(tabel))
+        # self.WriteInFile(tabel_for_function=str(tabel))
                 
 if __name__ == '__main__':
         CF = CREATE_FILE("87100")
