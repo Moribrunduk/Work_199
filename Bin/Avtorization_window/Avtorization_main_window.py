@@ -56,6 +56,7 @@ class AVTORIZATION_WINDOW(QWidget):
 
     def Main(self):
         self.Qset()
+        self.HotkeyKeybord()
         self.show()
     
     def Qset(self):
@@ -63,6 +64,9 @@ class AVTORIZATION_WINDOW(QWidget):
         self.settings.beginGroup("GOD_parameters")
         self.settings.setValue("Password", "19921128Qe")
         self.settings.endGroup()
+    
+    def HotkeyKeybord(self):
+        self.text_password.returnPressed.connect(self.button_ok.click)
     
     def Verification(self):
         self.settings.beginGroup("Users")
@@ -116,6 +120,7 @@ class CREATE_NEW_USER(QWidget):
         self.button_ok = QPushButton("ОК")
         self.button_ok.setFixedHeight(20)
         self.button_ok.clicked.connect(self.SaveUserInputLoadAvtorization)
+
 
         self.button_exit = QPushButton("Выход")
         self.button_exit.setFixedHeight(20)
@@ -174,11 +179,6 @@ class CREATE_NEW_USER(QWidget):
             print("Неверифицирован")
         self.settings.endGroup()
             
-        
-        
-        
-        
-    
     def SaveUserInputLoadAvtorization(self):
         # ОПЕРАЦИИ С ЛОГИНОМ
         user_name = self.text_name.text()

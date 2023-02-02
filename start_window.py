@@ -2,8 +2,8 @@ import sys
 import json
 import xlwt
 import xlrd
-from PyQt5.QtWidgets import QWidget, QApplication,QLabel,QGridLayout,QPushButton,QVBoxLayout,QLineEdit,QHBoxLayout
-from PyQt5.QtGui import  QPixmap
+from PyQt5.QtWidgets import QWidget, QApplication,QLabel,QGridLayout,QPushButton,QLineEdit,QShortcut
+from PyQt5.QtGui import  QPixmap, QKeySequence
 from PyQt5.QtCore import Qt, QTimer 
 sys.path.insert(1,"Bin")
 sys.path.insert(2,"Bin\Avtorization_window")
@@ -46,50 +46,7 @@ class Start_picture(QWidget):
         self.AW = AVTORIZATION_WINDOW()
         self.AW.show()
 
-class Avtorisation_widow(QWidget):
-    def __init__(self):
-        super(Avtorisation_widow,self).__init__()
-        self.initUI()
-    
-        
-    def initUI(self):
-        
-        self.layout = QGridLayout()
-        self.setWindowTitle("Авторизация")
-        self.label_name = QLabel("Имя")
-        self.label_password = QLabel("Пароль")
-        self.text_name = QLineEdit()
-        self.text_password = QLineEdit()
-        self.button_ok = QPushButton("ОК")
 
-        self.button_ok.clicked.connect(self.start)
-
-        self.button_exit = QPushButton("Выход")
-        self.button_exit.clicked.connect(self.exit_prog)
-
-        self.layout.addWidget(self.label_name,0,0,1,4)
-        self.layout.addWidget(self.label_password,1,0,1,4)
-
-        self.layout.addWidget(self.text_name,0,1,1,4)
-        self.layout.addWidget(self.text_password,1,1,1,4)
-
-        self.layout.addWidget(self.button_ok,2,3,1,1)
-        self.layout.addWidget(self.button_exit,2,4,1,1)
-
-        self.setFixedSize(300,110)
-        self.setLayout(self.layout)
-
-        self.GodVerificztion()
-        
-        self.show()
-    
-
-    def exit_prog(self):
-        sys.exit()
-    
-    def start(self):
-            
-            self.main_window()
     def main_window(self):
 
             self.cont = MAIN_WINDOW()

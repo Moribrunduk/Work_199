@@ -225,6 +225,7 @@ class CREATE_FILE():
         for item in remoove_day_list:
             if item[2] == "-":
                 remoove_day_list.remove(item)
+        print(remoove_day_list)
         return remoove_day_list
 
     def WriteInFile(self,tabel_for_function):
@@ -262,13 +263,16 @@ class CREATE_FILE():
                     if tabel_number == int(item[2]):
                         # проверяем входят ли дни когда этот табельный замещает, в причину замещения
                         if int(reason[0])<=int(item[0])<=int(item[1])<=int(reason[1]): 
-                            print(f"{item} входит в {reason}")
+                            print(f"[INFO]{item} входит в {reason}")
                             # изменяем крайний день замещения
+                            Day_x = int(item[0])
                             Day_z = int(item[1])
                             # заменяем этот элемент в списке на печать
                             print(tabel_for_function,reason[2],Day_x,Day_z,tabel_number)
                             
                             print(count)
+                            count+=1
+                            final_list.append("")
                             final_list[count]=(tabel_for_function,reason[2],Day_x,Day_z,tabel_number)
                             print(final_list)
                     # если табельный поменялся
@@ -301,13 +305,13 @@ class CREATE_FILE():
 
     def MAIN_FINCTION(self):
 
-        for tabel in self.tabels:
-                self.WriteInFile(tabel_for_function=str(tabel))
-                self.ReasonBlock(tabel_for_function=str(tabel))
-        # tabel =  453
+        # for tabel in self.tabels:
+        #         self.WriteInFile(tabel_for_function=str(tabel))
+        #         self.ReasonBlock(tabel_for_function=str(tabel))
+        tabel =  406
         # self.ReasonBlock(tabel_for_function=str(tabel))
-        # # self.UserRework(tabel_for_function=str(tabel))
-        # self.WriteInFile(tabel_for_function=str(tabel))
+        self.UserRework(tabel_for_function=str(tabel))
+        self.WriteInFile(tabel_for_function=str(tabel))
                 
 if __name__ == '__main__':
         CF = CREATE_FILE("87100")

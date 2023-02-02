@@ -3,13 +3,21 @@ import sys
 import os
 from PyQt5 import QtCore
 from PyQt5.QtGui import QStandardItemModel,QStandardItem,QColor
-from PyQt5.QtWidgets import QWidget,QHBoxLayout,QTableView,QApplication,QPushButton,QGridLayout,QMainWindow,QVBoxLayout,QHeaderView
+from PyQt5.QtWidgets import QWidget,QHBoxLayout,QTableView,QApplication,QPushButton,QGridLayout,QMainWindow,QVBoxLayout,QHeaderView,QMessageBox, QFrame
 import json
 import configparser
 from collections import Counter
 
 from Create_final_excell_file import CREATE_EXCELL
 from Load_file_form import Change_profession
+from Table_element.All_money_window import ALL_MONEY_WINDOW
+
+sys.path.append("data")
+sys.path.append("Settings_form_window")
+from Settings_form_window.widget_for_main_window import (DefectoscopistRGG , DefectoscopistPZRS, Fotolaborant, Form_with_day)
+
+
+
 
 
 class MAIN_WORK_TABLE(QWidget): 
@@ -18,7 +26,11 @@ class MAIN_WORK_TABLE(QWidget):
         self.proffession_number = str(proffession_number)
         super(MAIN_WORK_TABLE, self).__init__()
         self.initUI()
-        
+
+    def LayoutAMW(self):
+        self.AMW = ALL_MONEY_WINDOW(self.proffession_number)
+        return self.AMW.layout
+       
     def initUI(self):
 
         self.setWindowTitle("Расчет 199 премии")
@@ -32,7 +44,11 @@ class MAIN_WORK_TABLE(QWidget):
         self.model_summ = QStandardItemModel()
         self.summ_table_view = QTableView()
         self.summ_table_view.setModel(self.model_summ)
-
+        
+        # форма с общей суммой
+        ALL_SUMM = self.LayoutAMW()
+        self.form_wit_summ = QFrame()
+        self.form_wit_summ .setLayout(ALL_SUMM)
 
         self.top_layout = QGridLayout()
         self.main_layout = QVBoxLayout()
@@ -41,11 +57,16 @@ class MAIN_WORK_TABLE(QWidget):
         self.button = QPushButton("Создать файл для печати")
         self.button.clicked.connect(self.ButtonAction)
         self.button2 = QPushButton("Выбрать другой файл")
-        self.button2.clicked.connect(self.ButtonActionChangeFile)
         self.button2.clicked.connect(self.ChangeFile)
 
-        self.top_layout.addWidget(self.data_table_view,0,0)
-        self.top_layout.addWidget(self.summ_table_view,0,1)
+        self.money_layout = QVBoxLayout()
+        self.money_layout.addWidget(self.summ_table_view)
+        self.money_layout.addWidget(self.form_wit_summ)
+
+
+        self.top_layout.addWidget(self.data_table_view,0,1)
+        self.top_layout.addLayout(self.money_layout,0,2)
+        # self.top_layout.addWidget(self.form_wit_summ ,0,1,3,3)
         self.Button_layout.addWidget(self.button)
         self.Button_layout.addWidget(self.button2)
 
@@ -61,8 +82,19 @@ class MAIN_WORK_TABLE(QWidget):
         SETTINGS = configparser.ConfigParser()
         SETTINGS.read("data/SETTINGS.ini", encoding="utf-8")
         current_path = SETTINGS["Settings"][f"current_directory_{self.proffession_number}"]
-        with open(f"{current_path}", "r", encoding="utf-8") as file:
-             self.all_data = json.load(file)
+
+# ОБРАБОТКА ОШИБКИ ОТСУТСВТИЯ ФАЙЛА В КОТОРЫЙ ВСЕ ЗАПИСЫВАЛОСЬ
+        try:
+            with open(f"{current_path}", "r", encoding="utf-8") as file:
+                    self.all_data = json.load(file)
+        except FileExistsError: 
+            SETTINGS["Settings"][f"current_directory_{self.proffession_number}"]=""
+            SETTINGS["Settings"][f"path_{self.proffession_number}"]=""
+            SETTINGS["Settings"][f"path_with_input_{self.proffession_number}"]=""
+            with open("data\SETTINGS.ini", "w", encoding="utf-8") as configfile:
+                SETTINGS.write(configfile)
+        
+
         self.tabels = self.all_data["шифр"][self.proffession_number]["Табельный"]
 
         self.AddDataToDataTable()
@@ -73,19 +105,30 @@ class MAIN_WORK_TABLE(QWidget):
         self.ParametersSummTable()
         self.summ_pay()
         self.PrintSumm()
+
     
     def ButtonAction(self):
-        self.CE = CREATE_EXCELL(self.proffession_number)
-        self.CE.Main()
-    
-    def ButtonActionChangeFile(self):
-        pass
+        self.year=self.all_data["шифр"][self.proffession_number]["Информация"]["год"]
+        self.month = self.all_data["шифр"][self.proffession_number]["Информация"]["месяц"]
+        self.TEMP = configparser.ConfigParser()
+        self.TEMP.read(f'{self.year}\\{self.month}\\data\\{self.proffession_number}_input.ini')
+
+        if os.path.isfile(f'{self.year}\\{self.month}\\data\\{self.proffession_number}_input.ini'):
+            if eval(self.TEMP["General"]["for_summ"]) == {}:
+                QMessageBox.warning(
+                    self, 'Ошибка', 'Ошибка: замещающих нет')   
+            else:
+                self.CE = CREATE_EXCELL(self.proffession_number)
+                self.CE.Main()
+        else:
+            QMessageBox.warning(
+                    self, 'Ошибка', 'Ошибка: замещающих нет')  
         
     def ChangeFile(self):
         self.CHP = Change_profession(self.proffession_number)
         self.CHP.show()
         self.CHP.OK_button.clicked.connect(self.Restart)
-        
+
     def Restart(self):
         QtCore.QCoreApplication.quit()
         status = QtCore.QProcess.startDetached(sys.executable, sys.argv)
@@ -296,10 +339,13 @@ class MAIN_WORK_TABLE(QWidget):
                 item.setEditable(False)
                 self.model.setItem(x, y+work_column, item)
         work_row = 4
-        for x in range(work_row,len(self.tabels)*2+work_row,4):
-            for y in range(0,16):
-                self.model.item(x, y+work_column).setBackground(QColor(204,204,204))
-                self.model.item(x+1, y+work_column).setBackground(QColor(204,204,204))
+        try:
+            for x in range(work_row,len(self.tabels)*2+work_row,4):
+                for y in range(0,16):
+                    self.model.item(x, y+work_column).setBackground(QColor(204,204,204))
+                    self.model.item(x+1, y+work_column).setBackground(QColor(204,204,204))
+        except AttributeError:
+            pass
 
 # ЗАДАЕМ БЭКГРАУНД ЯЧЕЙКАМ С ВЫХОДНЫМИ
 
@@ -352,7 +398,7 @@ class MAIN_WORK_TABLE(QWidget):
         # пробегаемся по табельным
         for tabel in self.tabels:
             # Итерируем рабочий календарь по количеству дней
-            for day in range(1,len(self.all_data["шифр"][self.proffession_number]["Рабочий календарь"])):
+            for day in range(0,len(self.all_data["шифр"][self.proffession_number]["Рабочий календарь"])+1):
                 # Проверяем есть ли в день у указанного табельного замещающие(если есть, значит отмечаем в таблице этот день)
                 if self.tabels[tabel]["Замещающие"].get(str(day)) !=None:
                     # если дни <16 это первая строка
@@ -519,7 +565,6 @@ class MAIN_WORK_TABLE(QWidget):
         hours = all_data["шифр"][self.proffession_number]["Информация"]["рабочих_часов"]
         # print(hours)
 
-
         # применям коэффициенты вредности
         if self.proffession_number == "87100":
             self.harmfulness = 0.24
@@ -533,18 +578,14 @@ class MAIN_WORK_TABLE(QWidget):
             self.harmfulness = 0.08
             self.coefficient = int(SETTINGS[self.proffession_number]["procent_text"])/100
 
-    
-        
         if os.path.isfile(SETTINGS_TEMP_PATH):
             data_dict = INPUT_TEMP["General"]["for_summ"]
             # создаем словарь табельных которые замещают
             tabels_dict = {}
 
-            
             data_dict = eval(data_dict)
             # print("----словарь_с_данными для суммы-----")
             
-
             def Summ(personal_number):
                 level = all_data["шифр"][self.proffession_number]["Табельный"][personal_number]["разряд"]
                 # print(level)
@@ -569,12 +610,10 @@ class MAIN_WORK_TABLE(QWidget):
                 # print(float('{:.2f}'.format(money_per_hours_in_harmfullness)))
                 return float('{:.2f}'.format(money_per_hours_in_harmfullness))
 
-
             # заполняем словарь(табельный:cумма)
             for value in data_dict.values():
                 if value not in tabels_dict:
                     tabels_dict[value] = 0
-
             
             for tabel, summ in tabels_dict.items():
 
@@ -583,7 +622,7 @@ class MAIN_WORK_TABLE(QWidget):
                         money = Summ(key[0])*int(key[2])
                         summ = tabels_dict[tabel]
                         tabels_dict[tabel]=summ+money
-            # print(tabels_dict)
+            print(tabels_dict)
             return(tabels_dict)
     
     def PrintSumm(self):

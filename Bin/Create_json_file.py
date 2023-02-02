@@ -51,14 +51,7 @@ class CREATE_JSON_DATA():
                 
            
            
-        # создаем календарь рабочего времени(для програмного расчета, начало с 0 последнее число 32)
-        base_calendar = []
-        for row in range(9,10+1):
-            for cell in range(6,22):
-                if work_sheet.cell(row,cell).value == "-":
-                    base_calendar.append(work_sheet.cell(row,cell).value)
-                else:
-                    base_calendar.append(int(work_sheet.cell(row,cell).value))
+     
         
         work_time_calendar = {}
         print(self.profession_number)
@@ -90,9 +83,10 @@ class CREATE_JSON_DATA():
         if self.profession_number == "87100":
             all_data["шифр"][self.profession_number]["Информация"]["рабочих_дней"] = int(work_sheet.cell(9,23).value)
             all_data["шифр"][self.profession_number]["Информация"]["рабочих_часов"] = int(work_sheet.cell(9,22).value)
-        elif self.profession_number == "87200" or "87300":
-            all_data["шифр"][self.profession_number]["Информация"]["рабочих_дней"] = int(work_sheet.cell(7,23).value)
-            all_data["шифр"][self.profession_number]["Информация"]["рабочих_часов"] = int(work_sheet.cell(7,22).value)
+        elif self.profession_number == "87200" or "08300":
+            all_data["шифр"][self.profession_number]["Информация"]["рабочих_дней"] = int(work_sheet.cell(5,23).value)
+            all_data["шифр"][self.profession_number]["Информация"]["рабочих_часов"] = int(work_sheet.cell(5,22).value)
+        
 
         all_data["шифр"][self.profession_number]["Рабочий календарь"] = work_time_calendar
 
@@ -148,9 +142,18 @@ class CREATE_JSON_DATA():
             missed_day = []
             missed_day_dict ={}
             name_missed = settings["Days"]["days_keys"]
+            # вынимаем значения ключей из словаря с повременным календарем
+            list_time_calendar = []
+            for i,day in enumerate(work_time_calendar.values()):
+                if i == 15:
+                    list_time_calendar.append("-")
+                
+                list_time_calendar.append(day)
+
+
             
-            # проверяем есть ли причина отсутствия которая есть в файле SETTINGS
-            for x in range(0,len(base_calendar)):
+# проверяем есть ли причина отсутствия которая есть в файле SETTINGS
+            for x in range(0,len(list_time_calendar)):
                 print(calendar_time[x])
                 if str(calendar_time[x]) in name_missed:
                     if x<15:
@@ -159,8 +162,10 @@ class CREATE_JSON_DATA():
                     else:
                         missed_day.append(x)
                         missed_day_dict[x] = calendar_time[x]
-            # проверяем чтобы совпадали часы(если человек брал за свой счет сколько то часов)
-                elif str(calendar_time[x])[0] != str(base_calendar[x]):
+
+# проверяем чтобы совпадали часы(если человек брал за свой счет сколько то часов)
+
+                elif str(calendar_time[x])[0] != str(list_time_calendar[x]):
                     if x<15:
                         if str(calendar_time[x])[0] == "7":
                             continue
@@ -171,7 +176,8 @@ class CREATE_JSON_DATA():
                             continue
                         missed_day.append(x)
                         missed_day_dict[x] = calendar_time[x]
-            # Проверяем на замещение
+            
+# Проверяем на замещение
                 elif str(calendar_time[x])[1:3] in ("МН","мн","МВ","мв","МД","мд","м","М"):
                     if x<15:
                         missed_day.append(x+1)
@@ -179,9 +185,6 @@ class CREATE_JSON_DATA():
                     else:
                         missed_day.append(x)
                         missed_day_dict[x] = calendar_time[x]
-
-
-                
 
 ##############################################################################
             all_data["шифр"][self.profession_number]["Табельный"][tabel_number] = {
